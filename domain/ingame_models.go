@@ -7,8 +7,9 @@ import (
 
 // AAServer in-game Archeage server
 type AAServer struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
+	ID         uuid.UUID `json:"id"`
+	Name       string    `json:"name"`
+	ExternalID string    `json:"external_id"`
 }
 
 // AANickname in-game ArcheAge nickname
