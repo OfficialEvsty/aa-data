@@ -11,3 +11,8 @@ type ISqlExecutor interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 }
+
+// ITxExecutor interface for providing tx implementation
+type ITxExecutor interface {
+	WithTx(ctx context.Context, fn func(ctx context.Context) error) error
+}
