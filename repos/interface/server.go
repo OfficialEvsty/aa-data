@@ -2,6 +2,7 @@ package repos
 
 import (
 	"context"
+	"database/sql"
 	"github.com/OfficialEvsty/aa-data/domain"
 	"github.com/google/uuid"
 )
@@ -12,4 +13,5 @@ type IServerRepository interface {
 	GetByExternalID(context.Context, string) (*domain.AAServer, error)
 	List(context.Context) ([]*domain.AAServer, error)
 	Remove(context.Context, uuid.UUID) error
+	WithTx(*sql.Tx) IServerRepository
 }

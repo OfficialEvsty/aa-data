@@ -2,8 +2,11 @@ package repos
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
+	"github.com/OfficialEvsty/aa-data/domain"
+	repos "github.com/OfficialEvsty/aa-data/repos/interface"
 	"github.com/google/uuid"
 )
 
@@ -24,4 +27,18 @@ func (r *GuildNicknameRepository) Add(ctx context.Context, guildID uuid.UUID, ni
 		return fmt.Errorf("error linking guild and nickname: %v", err)
 	}
 	return nil
+}
+
+func (r *GuildNicknameRepository) GetGuild(context.Context, *domain.AANickname) (*domain.GuildNickname, error) {
+	return nil, nil
+}
+func (r *GuildNicknameRepository) GetMembers(context.Context, *domain.AAGuild) ([]*domain.GuildNickname, error) {
+	return nil, nil
+}
+func (r *GuildNicknameRepository) ExcludeMember(context.Context, *domain.AANickname) error {
+	return nil
+}
+
+func (r *GuildNicknameRepository) WithTx(tx *sql.Tx) repos.IGuildNicknameRepository {
+	return &GuildNicknameRepository{tx}
 }

@@ -2,6 +2,7 @@ package repos
 
 import (
 	"context"
+	"database/sql"
 	"github.com/OfficialEvsty/aa-data/domain"
 	"github.com/google/uuid"
 )
@@ -12,4 +13,5 @@ type IGuildNicknameRepository interface {
 	GetMembers(context.Context, *domain.AAGuild) ([]*domain.GuildNickname, error)
 	Add(context.Context, uuid.UUID, uuid.UUID) error
 	ExcludeMember(context.Context, *domain.AANickname) error
+	WithTx(*sql.Tx) IGuildNicknameRepository
 }

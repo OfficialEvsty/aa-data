@@ -2,9 +2,11 @@ package repos
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
+	repos "github.com/OfficialEvsty/aa-data/repos/interface"
 	"github.com/google/uuid"
 )
 
@@ -59,4 +61,8 @@ func (r *ServerRepository) List(ctx context.Context) ([]*domain.AAServer, error)
 }
 func (r *ServerRepository) Remove(context.Context, uuid.UUID) error {
 	return nil
+}
+
+func (r *ServerRepository) WithTx(tx *sql.Tx) repos.IServerRepository {
+	return &ServerRepository{tx}
 }

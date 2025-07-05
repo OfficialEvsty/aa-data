@@ -42,13 +42,13 @@ func NewServerImporter(
 
 // Handle executes command
 func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNicknamesCommand) error {
-	err := si.tx.WithTx(ctx, func(ctx context.Context) error {
+	err := si.tx.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
 		for _, s := range cmd.Servers {
 			var server *domain.AAServer
-			server, err := si.serverRepo.GetByExternalID(ctx, s.Server.ExternalID)
+			server, err := si.serverRepo.WithTx(tx).GetByExternalID(ctx, s.Server.ExternalID)
 			if err != nil {
 				if errors.Is(err, sql.ErrNoRows) {
-					server, err = si.serverRepo.Add(ctx, *s.Server)
+					server, err = si.serverRepo.WithTx(tx).Add(ctx, *s.Server)
 					if err != nil {
 						return fmt.Errorf("error adding server: %v", err)
 					}
@@ -56,17 +56,17 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 			}
 			for _, g := range s.Guilds {
 				g.Guild.ServerID = server.ID
-				guild, err := si.guildRepo.Add(ctx, *g.Guild)
+				guild, err := si.guildRepo.WithTx(tx).Add(ctx, *g.Guild)
 				if err != nil {
 					return fmt.Errorf("error adding guild: %v", err)
 				}
 				for _, n := range g.Nicknames {
 					n.Nickname.ServerID = server.ID
-					nickname, err := si.nickRepo.Create(ctx, n.Nickname)
+					nickname, err := si.nickRepo.WithTx(tx).Create(ctx, n.Nickname)
 					if err != nil {
 						return fmt.Errorf("error creating nickname: %v", err)
 					}
-					err = si.linkRepo.Add(ctx, guild.ID, nickname.ID)
+					err = si.linkRepo.WithTx(tx).Add(ctx, guild.ID, nickname.ID)
 					if err != nil {
 						return fmt.Errorf("error adding nickname: %v", err)
 					}

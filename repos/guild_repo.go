@@ -2,9 +2,11 @@ package repos
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
+	repos "github.com/OfficialEvsty/aa-data/repos/interface"
 	"github.com/google/uuid"
 )
 
@@ -60,4 +62,8 @@ func (r *GuildRepository) List(ctx context.Context) ([]*domain.AAGuild, error) {
 		result = append(result, &guild)
 	}
 	return result, nil
+}
+
+func (r *GuildRepository) WithTx(tx *sql.Tx) repos.IGuildRepository {
+	return &GuildRepository{tx}
 }

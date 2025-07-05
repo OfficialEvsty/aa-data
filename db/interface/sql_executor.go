@@ -14,5 +14,5 @@ type ISqlExecutor interface {
 
 // ITxExecutor interface for providing tx implementation
 type ITxExecutor interface {
-	WithTx(ctx context.Context, fn func(ctx context.Context) error) error
+	WithTx(ctx context.Context, fn func(ctx context.Context, tx *sql.Tx) error) error
 }

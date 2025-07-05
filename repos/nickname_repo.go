@@ -2,10 +2,12 @@ package repos
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
+	repos "github.com/OfficialEvsty/aa-data/repos/interface"
 	"github.com/google/uuid"
 )
 
@@ -61,4 +63,8 @@ func (r *NicknameRepo) GetByName(ctx context.Context, serverID uuid.UUID, name s
 		return nil, fmt.Errorf("scan failed: %v", err)
 	}
 	return &result, nil
+}
+
+func (r *NicknameRepo) WithTx(tx *sql.Tx) repos.INicknameRepository {
+	return &NicknameRepo{tx}
 }
