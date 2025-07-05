@@ -29,7 +29,7 @@ func (r *NicknameRepo) Create(ctx context.Context, nickname domain.AANickname) (
 
 	query := `INSERT INTO aa_nicknames (id, server_id, name) 
 			  VALUES ($1, $2, $3) 
-			  ON CONFLICT (server_id, name) DO NOTHING 
+			  ON CONFLICT (server_id, name) DO UPDATE SET name = EXCLUDED.name 
 			  RETURNING id, name, server_id, created_at`
 	res := r.exec.QueryRowContext(ctx, query, uuid.New(), nickname.ServerID, nickname.Name)
 	err := res.Scan(&result.ID, &result.Name, &result.ServerID, &result.CreatedAt)

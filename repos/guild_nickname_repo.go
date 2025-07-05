@@ -20,7 +20,7 @@ func NewGuildNicknameRepository(exec db.ISqlExecutor) *GuildNicknameRepository {
 
 // Add links guild and nickname
 func (r *GuildNicknameRepository) Add(ctx context.Context, guildID uuid.UUID, nicknameID uuid.UUID) error {
-	query := `INSERT INTO aa_guild_nicknames (guild_id, nickname_id) VALUES ($1, $2) ON CONFLICT DO NOTHING;`
+	query := `INSERT INTO aa_guild_nicknames (guild_id, nickname_id) VALUES ($1, $2) ON CONFLICT (guild_id, nickname_id) DO NOTHING;`
 	_, err := r.exec.ExecContext(ctx, query, guildID, nicknameID)
 	if err != nil {
 		return err
