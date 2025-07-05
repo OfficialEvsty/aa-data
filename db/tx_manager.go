@@ -12,7 +12,11 @@ type TxManager struct {
 }
 
 func NewTxManager(db *sql.DB) *TxManager {
-	return &TxManager{exec: db}
+	tx := &TxManager{exec: db}
+	if tx == nil {
+		panic("NewServerImporter: tx is nil") // 💥 остановись сразу
+	}
+	return tx
 }
 
 // WithTx working with tx life-circle
