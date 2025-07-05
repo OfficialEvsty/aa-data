@@ -64,5 +64,11 @@ func (r *ServerRepository) Remove(context.Context, uuid.UUID) error {
 }
 
 func (r *ServerRepository) WithTx(tx *sql.Tx) repos.IServerRepository {
+	if r == nil {
+		panic("ServerRepository.WithTx called on nil receiver")
+	}
+	if tx == nil {
+		panic("ServerRepository.WithTx received nil tx")
+	}
 	return &ServerRepository{tx}
 }
