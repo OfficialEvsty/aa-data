@@ -24,6 +24,7 @@ func NewGuildRepository(executor db.ISqlExecutor) *GuildRepository {
 // Add saves domain.AAGuild in table aa_guilds
 func (r *GuildRepository) Add(ctx context.Context, guild domain.AAGuild) (*domain.AAGuild, error) {
 	var result domain.AAGuild
+	guild.ID = uuid.New()
 	query := `INSERT INTO aa_guilds (id, name, server_id) 
               VALUES ($1, $2, $3) ON CONFLICT (server_id, name) DO UPDATE SET name = EXCLUDED.name RETURNING id, name, server_id;`
 	res := r.exec.QueryRowContext(ctx, query, guild.ID, guild.Name, guild.ServerID)

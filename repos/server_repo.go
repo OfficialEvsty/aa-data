@@ -20,6 +20,7 @@ func NewServerRepository(exec db.ISqlExecutor) *ServerRepository {
 // Add domain.AAServer to database
 func (r *ServerRepository) Add(ctx context.Context, server domain.AAServer) (*domain.AAServer, error) {
 	var result domain.AAServer
+	server.ID = uuid.New()
 	query := `INSERT INTO aa_servers (id, name, external_id)
  			  VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING id, name, external_id;`
 	res := r.exec.QueryRowContext(ctx, query, server.ID, server.Name, server.ExternalID)

@@ -26,7 +26,6 @@ func NewNicknameRepo(executor db.ISqlExecutor) *NicknameRepo {
 // Create saves nickname in table aa_nicknames
 func (r *NicknameRepo) Create(ctx context.Context, nickname domain.AANickname) (*domain.AANickname, error) {
 	var result domain.AANickname
-
 	query := `INSERT INTO aa_nicknames (id, server_id, name) 
 			  VALUES ($1, $2, $3) 
 			  ON CONFLICT (server_id, name) DO UPDATE SET name = EXCLUDED.name 
