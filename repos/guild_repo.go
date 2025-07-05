@@ -25,7 +25,7 @@ func NewGuildRepository(executor db.ISqlExecutor) *GuildRepository {
 func (r *GuildRepository) Add(ctx context.Context, guild domain.AAGuild) (*domain.AAGuild, error) {
 	var result domain.AAGuild
 	query := `INSERT INTO aa_guilds (id, name, server_id) 
-              VALUES ($1, $2, $3)`
+              VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING id, name, server_id;`
 	res, err := r.exec.QueryContext(ctx, query, guild.ID, guild.Name, guild.ServerID)
 	if err != nil {
 		return nil, err
