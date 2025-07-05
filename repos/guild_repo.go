@@ -26,11 +26,8 @@ func (r *GuildRepository) Add(ctx context.Context, guild domain.AAGuild) (*domai
 	var result domain.AAGuild
 	query := `INSERT INTO aa_guilds (id, name, server_id) 
               VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING id, name, server_id;`
-	res, err := r.exec.QueryContext(ctx, query, guild.ID, guild.Name, guild.ServerID)
-	if err != nil {
-		return nil, err
-	}
-	err = res.Scan(&result.ID, &result.Name, &result.ServerID)
+	res := r.exec.QueryRowContext(ctx, query, guild.ID, guild.Name, guild.ServerID)
+	err := res.Scan(&result.ID, &result.Name, &result.ServerID)
 	if err != nil {
 		return nil, err
 	}
