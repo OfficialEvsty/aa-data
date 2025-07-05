@@ -49,9 +49,11 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 			if err != nil {
 				if errors.Is(err, sql.ErrNoRows) {
 					server, err = si.serverRepo.WithTx(tx).Add(ctx, *s.Server)
-				}
-				if err != nil {
-					return fmt.Errorf("error adding server: %v", err)
+					if err != nil {
+						return fmt.Errorf("error adding server: %w", err)
+					}
+				} else {
+					return fmt.Errorf("error getting server by external ID: %w", err)
 				}
 			}
 			for _, g := range s.Guilds {
