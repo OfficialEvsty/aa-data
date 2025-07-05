@@ -31,14 +31,8 @@ func (r *NicknameRepo) Create(ctx context.Context, nickname domain.AANickname) (
 			  VALUES ($1, $2, $3) 
 			  ON CONFLICT (server_id, name) DO NOTHING 
 			  RETURNING id, name, server_id, created_at`
-	res, err := r.exec.QueryContext(ctx, query, uuid.New(), nickname.ServerID, nickname.Name)
-	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			return nil, fmt.Errorf("deadline exceeded %v", err)
-		}
-		return nil, err
-	}
-	err = res.Scan(&result.ID, &result.Name, &result.ServerID, &result.CreatedAt)
+	res := r.exec.QueryRowContext(ctx, query, uuid.New(), nickname.ServerID, nickname.Name)
+	err := res.Scan(&result.ID, &result.Name, &result.ServerID, &result.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
