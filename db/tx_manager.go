@@ -13,8 +13,8 @@ type TxManager struct {
 
 func NewTxManager(db *sql.DB) *TxManager {
 	tx := &TxManager{exec: db}
-	if tx == nil {
-		panic("NewServerImporter: tx is nil") // 💥 остановись сразу
+	if db == nil {
+		panic("NewServerImporter: db is nil because tx is nil") // 💥 остановись сразу
 	}
 	return tx
 }
