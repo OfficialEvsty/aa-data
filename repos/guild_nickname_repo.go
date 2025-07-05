@@ -3,7 +3,6 @@ package repos
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
 	repos "github.com/OfficialEvsty/aa-data/repos/interface"
@@ -24,7 +23,7 @@ func (r *GuildNicknameRepository) Add(ctx context.Context, guildID uuid.UUID, ni
 	query := `INSERT INTO aa_guild_nicknames (guild_id, nickname_id) VALUES ($1, $2) ON CONFLICT DO NOTHING;`
 	_, err := r.exec.ExecContext(ctx, query, guildID, nicknameID)
 	if err != nil {
-		return fmt.Errorf("error linking guild and nickname: %v", err)
+		return err
 	}
 	return nil
 }

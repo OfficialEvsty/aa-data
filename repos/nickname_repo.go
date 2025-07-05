@@ -36,11 +36,11 @@ func (r *NicknameRepo) Create(ctx context.Context, nickname domain.AANickname) (
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, fmt.Errorf("deadline exceeded %v", err)
 		}
-		return nil, fmt.Errorf("insert failed: %v", err)
+		return nil, err
 	}
 	err = res.Scan(&result.ID, &result.Name, &result.ServerID, &result.CreatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("scan failed: %v", err)
+		return nil, err
 	}
 	return &result, nil
 }
@@ -56,11 +56,11 @@ func (r *NicknameRepo) GetByName(ctx context.Context, serverID uuid.UUID, name s
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, fmt.Errorf("deadline exceeded %v", err)
 		}
-		return nil, fmt.Errorf("select query failed: %v", err)
+		return nil, err
 	}
 	err = res.Scan(&result.ID, &result.Name, &result.ServerID, &result.CreatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("scan failed: %v", err)
+		return nil, err
 	}
 	return &result, nil
 }

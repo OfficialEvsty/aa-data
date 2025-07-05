@@ -3,7 +3,6 @@ package repos
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
 	repos "github.com/OfficialEvsty/aa-data/repos/interface"
@@ -26,7 +25,7 @@ func (r *ServerRepository) Add(ctx context.Context, server domain.AAServer) (*do
 	res := r.exec.QueryRowContext(ctx, query, server.ID, server.Name, server.ExternalID)
 	err := res.Scan(&result.ID, &result.Name, &result.ExternalID)
 	if err != nil {
-		return nil, fmt.Errorf("error while trying to add server: %v", err)
+		return nil, err
 	}
 	return &result, nil
 }
@@ -38,7 +37,7 @@ func (r *ServerRepository) GetByExternalID(ctx context.Context, externalID strin
 	res := r.exec.QueryRowContext(ctx, query, externalID)
 	err := res.Scan(&result.ID, &result.Name, &result.ExternalID)
 	if err != nil {
-		return nil, fmt.Errorf("error while trying to get server: %v", err)
+		return nil, err
 	}
 	return &result, nil
 }
@@ -47,13 +46,13 @@ func (r *ServerRepository) List(ctx context.Context) ([]*domain.AAServer, error)
 	query := `SELECT id, name, external_id FROM aa_servers`
 	rows, err := r.exec.QueryContext(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("error while trying to list servers: %v", err)
+		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var server domain.AAServer
 		if err = rows.Scan(&server.ID, &server.Name, &server.ExternalID); err != nil {
-			return nil, fmt.Errorf("error while trying to scan server: %v", err)
+			return nil, err
 		}
 		result = append(result, &server)
 	}
