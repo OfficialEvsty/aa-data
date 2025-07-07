@@ -9,8 +9,8 @@ type DropItemList []DropItem
 
 // DropItem make this entity serializable
 type DropItem struct {
-	ItemID int64  `json:"item_id"`
-	Rate   string `json:"rate"`
+	ItemID int64  `json:"item_id" yaml:"id"`
+	Rate   string `json:"rate" yaml:"rate"`
 }
 
 // Scan implementation of sql.scanner
