@@ -9,7 +9,7 @@ type DropItemList []DropItem
 
 // DropItem make this entity serializable
 type DropItem struct {
-	ItemID int64  `json:"item_id" yaml:"id"`
+	ItemID int64  `json:"id" yaml:"id"`
 	Rate   string `json:"rate" yaml:"rate"`
 }
 
