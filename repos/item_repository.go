@@ -29,7 +29,7 @@ func (r *ItemRepository) Add(
   			  VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO UPDATE SET id = EXCLUDED.id 
 			  RETURNING id, name, tier, img_grade_url, img_url;`
 	row := r.exec.QueryRowContext(ctx, query, temp.ID, temp.Name, temp.Tier, temp.TierURL, temp.ImageURL)
-	err := row.Scan(result.ID, result.Name, result.Tier, result.ImageURL, result.ImageURL)
+	err := row.Scan(&result.ID, &result.Name, &result.Tier, &result.ImageURL, &result.ImageURL)
 	if err != nil {
 		return nil, err
 	}
