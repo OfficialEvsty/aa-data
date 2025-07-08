@@ -26,7 +26,7 @@ func (r *BossesRepository) WithTx(tx *sql.Tx) repos2.IBossesRepository {
 func (r *BossesRepository) Add(ctx context.Context, boss domain.AABoss) (*domain.AABoss, error) {
 	var result domain.AABoss
 	query := `INSERT INTO aa_bosses (id, name, drop, level, img_url)
-			  VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO UPDATE SET drop = $3
+			  VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO UPDATE SET drop = $3
 			  RETURNING id, name, drop, level, img_url`
 	err := r.exec.QueryRowContext(ctx, query, boss.ID, boss.Name, boss.Loot, boss.Level, boss.ImageURL).Scan(
 		&result.ID,
