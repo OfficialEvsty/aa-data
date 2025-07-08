@@ -25,14 +25,14 @@ func (r *BossesRepository) WithTx(tx *sql.Tx) repos2.IBossesRepository {
 // Add implementation of adding boss to table
 func (r *BossesRepository) Add(ctx context.Context, boss domain.AABoss) (*domain.AABoss, error) {
 	var result domain.AABoss
-	query := `INSERT INTO aa_bosses (id, name, drop, level, img_url)
+	query := `INSERT INTO aa_bosses (id, name, drop, img_grage_url, img_url)
 			  VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO UPDATE SET drop = $3
-			  RETURNING id, name, drop, level, img_url`
-	err := r.exec.QueryRowContext(ctx, query, boss.ID, boss.Name, boss.Loot, boss.Level, boss.ImageURL).Scan(
+			  RETURNING id, name, drop, img_grade_url, img_url`
+	err := r.exec.QueryRowContext(ctx, query, boss.ID, boss.Name, boss.Loot, boss.ImageGradeURL, boss.ImageURL).Scan(
 		&result.ID,
 		&result.Name,
 		&result.Loot,
-		&result.Level,
+		&result.ImageGradeURL,
 		&result.ImageURL,
 	)
 	if err != nil {
@@ -48,12 +48,12 @@ func (r *BossesRepository) Remove(ctx context.Context, id int64) error {
 
 func (r *BossesRepository) GetByID(ctx context.Context, id int64) (*domain.AABoss, error) {
 	var boss domain.AABoss
-	query := `SELECT id, name, drop, level, img_url  FROM aa_bosses WHERE id = $1`
+	query := `SELECT id, name, drop, img_grade_url, img_url  FROM aa_bosses WHERE id = $1`
 	err := r.exec.QueryRowContext(ctx, query, id).Scan(
 		&boss.ID,
 		&boss.Name,
 		&boss.Loot,
-		&boss.Level,
+		&boss.ImageGradeURL,
 		&boss.ImageURL,
 	)
 	if err != nil {
