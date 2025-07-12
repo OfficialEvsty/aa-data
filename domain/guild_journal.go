@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/OfficialEvsty/aa-data/domain/serializable"
 	"github.com/google/uuid"
 	"time"
 )
@@ -13,9 +14,10 @@ type Journal struct {
 
 // Raid contains info about bosses and theirs loot, and guild's members participated this
 type Raid struct {
-	ID           uuid.UUID `json:"id"`
-	RaidImageURL string    `json:"raid_image_url"`
-	OccurredAt   time.Time `json:"occurred_at"`
+	ID           uuid.UUID                 `json:"id"`
+	RaidImageURL serializable.S3Screenshot `json:"raid_image_url"`
+	OccurredAt   time.Time                 `json:"occurred_at"`
+	Status       serializable.Status       `json:"status"`
 }
 
 // RaidEvent mapped each raid to events which passed together

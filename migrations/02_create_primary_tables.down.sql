@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS storage;
+DROP TABLE IF EXISTS storage_aa_items;
+DROP TABLE IF EXISTS user_activities;
