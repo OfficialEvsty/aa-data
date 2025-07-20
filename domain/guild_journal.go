@@ -12,6 +12,15 @@ type Journal struct {
 	GuildID uuid.UUID `json:"guild_id"`
 }
 
+// Lunark time interval closest to month, contains batch of raids entities to sort it
+type Lunark struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	StartDate time.Time `json:"start_date"`
+	EndDate   time.Time `json:"end_date"`
+	Opened    bool      `json:"opened"`
+}
+
 // Raid contains info about bosses and theirs loot, and guild's members participated this
 type Raid struct {
 	ID           uuid.UUID                 `json:"id"`

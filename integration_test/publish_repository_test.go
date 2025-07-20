@@ -4,19 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/OfficialEvsty/aa-data/commands"
+	"github.com/OfficialEvsty/aa-data/db"
 	"github.com/OfficialEvsty/aa-data/domain"
 	"github.com/OfficialEvsty/aa-data/domain/serializable"
 	integration "github.com/OfficialEvsty/aa-data/integration_test"
 	"github.com/OfficialEvsty/aa-data/repos"
+	junction_repos2 "github.com/OfficialEvsty/aa-data/repos/junction"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
+	"github.com/magiconair/properties/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"log"
 	"os"
 	"testing"
+	"time"
 )
 
 var testDB *sql.DB
@@ -103,4 +108,169 @@ func TestInsertPublish(t *testing.T) {
 	if !isPubDataCorrect {
 		t.Fatal("expected published screen shot to be present")
 	}
+}
+
+func TestRefreshTokensCRUD(t *testing.T) {
+	ctx := context.Background()
+	log.Println("starts refresh tokens CRUD...")
+	tx, err := testDB.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	repo := repos.NewRefreshTokenRepository(testDB)
+	token := domain.RefreshToken{
+		Token:     uuid.New().String(),
+		UserID:    uuid.New(),
+		ExpiresAt: time.Now().Add(time.Hour * 48),
+	}
+	log.Println("token repository created ...")
+	newToken, err := repo.WithTx(tx).AddOrUpdate(ctx, token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, token.Token, newToken.Token)
+	assert.Equal(t, token.ExpiresAt.Unix(), newToken.ExpiresAt.Unix())
+	assert.Equal(t, token.UserID, newToken.UserID)
+	log.Println("refresh token successfully added ...")
+	receivedTokenByID, err := repo.WithTx(tx).GetByToken(ctx, token.Token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, token.Token, receivedTokenByID.Token)
+	assert.Equal(t, token.ExpiresAt.Unix(), receivedTokenByID.ExpiresAt.Unix())
+	assert.Equal(t, token.UserID, receivedTokenByID.UserID)
+	log.Println("refresh token successfully received by token raw ...")
+	receivedTokenByUserID, err := repo.WithTx(tx).GetByUserID(ctx, token.UserID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, token.Token, receivedTokenByUserID.Token)
+	assert.Equal(t, token.ExpiresAt.Unix(), receivedTokenByUserID.ExpiresAt.Unix())
+	assert.Equal(t, token.UserID, receivedTokenByUserID.UserID)
+	log.Println("refresh token successfully received by user id ...")
+	err = repo.WithTx(tx).Remove(ctx, token.Token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = repo.WithTx(tx).GetByToken(ctx, token.Token)
+	if err != sql.ErrNoRows {
+		t.Fatal(err)
+	}
+	log.Println("refresh token successfully removed ...")
+}
+
+func TestUsersCRUD(t *testing.T) {
+	ctx := context.Background()
+	log.Println("starts users CRUD...")
+	tx, err := testDB.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	repo := repos.NewUserRepository(testDB)
+	log.Println("users repository created ...")
+	insertUser := domain.User{
+		ID:       uuid.New(),
+		Username: "testuser",
+		Email:    "testuser@gmail.com",
+	}
+	returningUser, err := repo.WithTx(tx).AddOrUpdate(ctx, insertUser)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, insertUser.ID, returningUser.ID)
+	assert.Equal(t, insertUser.Username, returningUser.Username)
+	assert.Equal(t, insertUser.Email, returningUser.Email)
+	log.Println("user user successfully added ...")
+	userLastActivityTime := returningUser.LastSeen.UnixNano()
+	userCreatedAtTime := returningUser.CreatedAt.UnixNano()
+	updatedUser, err := repo.WithTx(tx).AddOrUpdate(ctx, insertUser)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updatedUser.LastSeen.UnixNano() <= userLastActivityTime {
+		t.Fatal("expected last seen time to be greater than user's last seen")
+	}
+	assert.Equal(t, updatedUser.CreatedAt.UnixNano(), userCreatedAtTime)
+	log.Println("user successfully updated ...")
+	userByID, err := repo.WithTx(tx).GetByID(ctx, insertUser.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, insertUser.ID, userByID.ID)
+	assert.Equal(t, insertUser.Username, userByID.Username)
+	assert.Equal(t, insertUser.Email, userByID.Email)
+	log.Println("user successfully retrieved by id...")
+	err = repo.WithTx(tx).Remove(ctx, insertUser.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = repo.WithTx(tx).GetByID(ctx, insertUser.ID)
+	if err != sql.ErrNoRows {
+		t.Fatal(err)
+	}
+	log.Println("user successfully removed ...")
+}
+
+func TestAddPublishCmd(t *testing.T) {
+	ctx := context.Background()
+	log.Println("starts add publish command...")
+	userRepo := repos.NewUserRepository(testDB)
+	allianceRepo := repos.NewTenantRepository(testDB)
+	testUserdata := domain.User{
+		ID:       uuid.New(),
+		Username: "testuser",
+		Email:    "testuser@gmail.com",
+	}
+	testUser, err := userRepo.AddOrUpdate(ctx, testUserdata)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testTenantData := domain.Tenant{
+		ID:      uuid.New(),
+		Name:    "testalliance",
+		OwnerID: testUser.ID,
+	}
+	testTenant, err := allianceRepo.Add(ctx, testTenantData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := commands.AddTenantPublishByUser{
+		PublishID: uuid.New(),
+		TenantID:  testTenant.ID,
+		UserID:    testUser.ID,
+		S3Data: serializable.S3Screenshot{
+			Key:    "s3key",
+			Bucket: "s3Bucket",
+			S3Name: "selectel",
+		},
+	}
+	txManager := db.NewTxManager(testDB)
+	pubRepo := repos.NewPublishRepository(testDB)
+	allyPubRepo := junction_repos2.NewTenantPublishRepository(testDB)
+	publisher := commands.NewPublisher(
+		txManager,
+		pubRepo,
+		allyPubRepo,
+	)
+	err = publisher.Handle(ctx, cmd)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Println("publish command successfully proceed ...")
+	checkPub, err := pubRepo.Get(ctx, cmd.PublishID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, cmd.PublishID, checkPub.ID)
+	log.Println("publish id retrieved ...")
+	checkAllyPub, err := allyPubRepo.GetByID(ctx, cmd.PublishID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, cmd.PublishID, checkAllyPub.PublishID)
+	assert.Equal(t, cmd.TenantID, checkAllyPub.TenantID)
+	assert.Equal(t, cmd.UserID, checkAllyPub.UserID)
+	log.Println("alliance publish successfully retrieved ...")
 }

@@ -44,8 +44,3 @@ CREATE TABLE IF NOT EXISTS aa_server_nicknames (
     UNIQUE (server_id, name)
 );
 
-CREATE TABLE IF NOT EXISTS user_publishes (
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    publish_id UUID REFERENCES publishes(id) ON DELETE CASCADE
-)
-

@@ -1,13 +1,15 @@
+CREATE TABLE IF NOT EXISTS users (
+                                     id UUID PRIMARY KEY,
+                                     username VARCHAR(20) NOT NULL,
+                                     email VARCHAR(254) UNIQUE NOT NULL,
+                                     created_at TIMESTAMPTZ DEFAULT now(),
+                                     last_seen TIMESTAMPTZ DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS events (
     id BIGSERIAL PRIMARY KEY,
     type SMALLINT NOT NULL,
     raid_ref TEXT NULL,
-    created_at TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY,
-    email VARCHAR(320) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 

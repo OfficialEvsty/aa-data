@@ -39,7 +39,7 @@ func (r *PublishRepository) Remove(ctx context.Context, id uuid.UUID) error {
 
 func (r *PublishRepository) Get(ctx context.Context, id uuid.UUID) (*domain.PublishedScreenshot, error) {
 	var s domain.PublishedScreenshot
-	query := `SELECT * FROM publishes WHERE id = $1;`
+	query := `SELECT id, s3 FROM publishes WHERE id = $1;`
 	row := r.exec.QueryRowContext(ctx, query, id)
 	err := row.Scan(&s.ID, &s.S3Data)
 	if err != nil {

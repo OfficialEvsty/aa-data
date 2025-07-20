@@ -12,9 +12,9 @@ type PublishedScreenshot struct {
 	S3Data serializable.S3Screenshot `json:"s3"`
 }
 
-// UserPublishedScreenshot it's PublishedScreenshot bounds to specified user id
-type UserPublishedScreenshot struct {
-	PublishedID uuid.UUID `json:"published_id"`
+type TenantPublish struct {
 	UserID      uuid.UUID `json:"user_id"`
+	TenantID    uuid.UUID `json:"tenant_id"`
+	PublishID   uuid.UUID `json:"publish_id"`
 	PublishedAt time.Time `json:"published_at"`
 }
