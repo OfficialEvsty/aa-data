@@ -1,3 +1,10 @@
+CREATE TABLE IF NOT EXISTS tenants (
+                                       id UUID PRIMARY KEY,
+                                       name VARCHAR(40) NOT NULL,
+                                       created_at TIMESTAMPTZ DEFAULT now(),
+                                       owner_id UUID NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS users (
                                      id UUID PRIMARY KEY,
                                      username VARCHAR(20) NOT NULL,

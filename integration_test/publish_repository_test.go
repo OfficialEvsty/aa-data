@@ -274,3 +274,76 @@ func TestAddPublishCmd(t *testing.T) {
 	assert.Equal(t, cmd.UserID, checkAllyPub.UserID)
 	log.Println("alliance publish successfully retrieved ...")
 }
+
+func TestTenantUserRepository(t *testing.T) {
+	ctx := context.Background()
+	log.Println("starts add tenant users repository...")
+	tx, err := testDB.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	userRepo := repos.NewUserRepository(testDB)
+	allianceRepo := repos.NewTenantRepository(testDB)
+	testUserdata := domain.User{
+		ID:       uuid.New(),
+		Username: "testuser",
+		Email:    "testuser@gmail.com",
+	}
+	testUser1, err := userRepo.WithTx(tx).AddOrUpdate(ctx, testUserdata)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testUserdata2 := domain.User{
+		ID:       uuid.New(),
+		Username: "testuser2",
+		Email:    "testuse2r@gmail.com",
+	}
+	testUser2, err := userRepo.WithTx(tx).AddOrUpdate(ctx, testUserdata2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testTenantData := domain.Tenant{
+		ID:      uuid.New(),
+		Name:    "testalliance",
+		OwnerID: testUser1.ID,
+	}
+	testTenant, err := allianceRepo.WithTx(tx).Add(ctx, testTenantData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tenantUserRepo := junction_repos2.NewTenantUserRepository(testDB)
+	err = tenantUserRepo.WithTx(tx).Add(ctx, testTenant.ID, testUser1.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Println("tenant user1 successfully proceed ...")
+	err = tenantUserRepo.WithTx(tx).Add(ctx, testTenant.ID, testUser2.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Println("tenant user2 successfully proceed ...")
+	userIDs, err := tenantUserRepo.WithTx(tx).GetUserIDs(ctx, testTenant.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, reqUserID := range []uuid.UUID{testUser1.ID, testUser2.ID} {
+		found := false
+		for _, userID := range userIDs {
+			if userID == reqUserID {
+				found = true
+			}
+		}
+		if !found {
+			t.Fatalf("user %s not found in tenant %s", reqUserID, testTenant.ID)
+		}
+	}
+	log.Println("tenant user1 & user2 successfully retrieved ...")
+	ok, err := tenantUserRepo.WithTx(tx).CheckUser(ctx, testTenant.ID, testUser1.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !ok {
+		t.Fatalf("user %s not found in tenant %s", testUser1.ID, testTenant.ID)
+	}
+	t.Log("tenant user1 & user2 successfully retrieved ...")
+}

@@ -28,6 +28,13 @@ type User struct {
 	LastSeen  time.Time `json:"last_seen"`
 }
 
+// TenantUser record about user related to specified tenant
+type TenantUser struct {
+	TenantID uuid.UUID `json:"tenant_id"`
+	UserID   uuid.UUID `json:"user_id"`
+	MemberAt time.Time `json:"member_at"`
+}
+
 // UserNickname record bounds user and their related nicknames
 type UserNickname struct {
 	UserID     uuid.UUID `json:"user_id"`

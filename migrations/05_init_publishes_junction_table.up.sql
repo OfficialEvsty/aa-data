@@ -1,9 +1,4 @@
-CREATE TABLE IF NOT EXISTS tenants (
-    id UUID PRIMARY KEY,
-    name VARCHAR(40) NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    owner_id UUID NOT NULL
-);
+
 
 CREATE TABLE IF NOT EXISTS tenant_publishes (
                                                   tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,

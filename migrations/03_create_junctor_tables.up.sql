@@ -44,3 +44,10 @@ CREATE TABLE IF NOT EXISTS aa_server_nicknames (
     UNIQUE (server_id, name)
 );
 
+CREATE TABLE IF NOT EXISTS tenant_users (
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    member_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (tenant_id, user_id)
+)
+
