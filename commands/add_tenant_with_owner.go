@@ -29,7 +29,7 @@ func NewTenantConstructor(txManager db.ITxExecutor, tenantRepo repos2.ITenantRep
 
 func (h *TenantConstructor) Handle(ctx context.Context, cmd AddTenantWithOwnerCommand) error {
 	err := h.txManager.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
-		tenant, err := h.tenantRepo.WithTx(tx).Add(ctx, cmd.tenant)
+		tenant, err := h.tenantRepo.WithTx(tx).Add(ctx, cmd.Tenant)
 		if err != nil {
 			return err
 		}
