@@ -10,7 +10,7 @@ import (
 )
 
 type AddTenantWithOwnerCommand struct {
-	tenant domain.Tenant
+	Tenant domain.Tenant
 }
 
 type TenantConstructor struct {
