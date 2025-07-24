@@ -9,6 +9,7 @@ import (
 	"github.com/OfficialEvsty/aa-data/domain"
 	"github.com/OfficialEvsty/aa-data/domain/serializable"
 	integration "github.com/OfficialEvsty/aa-data/integration_test"
+	"github.com/OfficialEvsty/aa-data/queries"
 	"github.com/OfficialEvsty/aa-data/repos"
 	junction_repos2 "github.com/OfficialEvsty/aa-data/repos/junction"
 	"github.com/golang-migrate/migrate/v4"
@@ -346,4 +347,61 @@ func TestTenantUserRepository(t *testing.T) {
 		t.Fatalf("user %s not found in tenant %s", testUser1.ID, testTenant.ID)
 	}
 	t.Log("tenant user1 & user2 successfully retrieved ...")
+}
+
+func TestTenantPublishQuery(t *testing.T) {
+	ctx := context.Background()
+	log.Println("starts add tenant publish query...")
+	tenantPublishQuery := queries.NewGetTenantPublishByIDQuery(testDB)
+	tenantPublishRepo := junction_repos2.NewTenantPublishRepository(testDB)
+	publishRepo := repos.NewPublishRepository(testDB)
+	tenantRepo := repos.NewTenantRepository(testDB)
+	userRepo := repos.NewUserRepository(testDB)
+	testUserdata := domain.User{
+		ID:       uuid.New(),
+		Username: "testuser",
+		Email:    "testuser@gmail.com",
+	}
+	user, err := userRepo.AddOrUpdate(ctx, testUserdata)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testTenantData := domain.Tenant{
+		ID:      uuid.New(),
+		Name:    "testalliance",
+		OwnerID: user.ID,
+	}
+	testTenant, err := tenantRepo.Add(ctx, testTenantData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testPublish := domain.PublishedScreenshot{
+		ID: uuid.New(),
+		S3Data: serializable.S3Screenshot{
+			Key:    "s3key",
+			Bucket: "s3Bucket",
+			S3Name: "selectel",
+		},
+	}
+	err = publishRepo.Add(ctx, testPublish)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testTenantPusblish := domain.TenantPublish{
+		UserID:    user.ID,
+		TenantID:  testTenant.ID,
+		PublishID: testPublish.ID,
+	}
+	_, err = tenantPublishRepo.Add(ctx, testTenantPusblish)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dto, err := tenantPublishQuery.Handle(ctx, testPublish.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, dto.TenantID, testTenant.ID)
+	assert.Equal(t, dto.PublishID, testPublish.ID)
+	assert.Equal(t, dto.UserID, user.ID)
+	assert.Equal(t, dto.S3.Key, testPublish.S3Data.Key)
 }

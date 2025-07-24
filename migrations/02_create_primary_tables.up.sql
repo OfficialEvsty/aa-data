@@ -1,9 +1,4 @@
-CREATE TABLE IF NOT EXISTS tenants (
-                                       id UUID PRIMARY KEY,
-                                       name VARCHAR(40) NOT NULL,
-                                       created_at TIMESTAMPTZ DEFAULT now(),
-                                       owner_id UUID NOT NULL
-);
+
 
 CREATE TABLE IF NOT EXISTS users (
                                      id UUID PRIMARY KEY,
@@ -11,6 +6,13 @@ CREATE TABLE IF NOT EXISTS users (
                                      email VARCHAR(254) UNIQUE NOT NULL,
                                      created_at TIMESTAMPTZ DEFAULT now(),
                                      last_seen TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS tenants (
+                                       id UUID PRIMARY KEY,
+                                       name VARCHAR(40) NOT NULL,
+                                       created_at TIMESTAMPTZ DEFAULT now(),
+                                       owner_id UUID REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS events (
