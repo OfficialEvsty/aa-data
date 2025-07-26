@@ -18,3 +18,9 @@ type TenantPublish struct {
 	PublishID   uuid.UUID `json:"publish_id"`
 	PublishedAt time.Time `json:"published_at"`
 }
+
+type FinishedPublish struct {
+	PublishID  uuid.UUID                                `json:"publish_id"`
+	Result     serializable.NicknameResultWithConflicts `json:"result"`
+	FinishedAt time.Time                                `json:"finished_at"`
+}

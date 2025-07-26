@@ -13,3 +13,9 @@ CREATE TABLE IF NOT EXISTS aa_tenant_guilds (
     guild_id UUID NOT NULL REFERENCES aa_guilds(id) ON DELETE CASCADE,
     joined_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS finished_publishes (
+                                                  publish_id UUID NOT NULL UNIQUE REFERENCES publishes(id) ON DELETE CASCADE,
+                                                  result JSONB NOT NULL,
+                                                  finished_at TIMESTAMPTZ DEFAULT now()
+)

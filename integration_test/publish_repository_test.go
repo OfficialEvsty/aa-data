@@ -405,3 +405,58 @@ func TestTenantPublishQuery(t *testing.T) {
 	assert.Equal(t, dto.UserID, user.ID)
 	assert.Equal(t, dto.S3.Key, testPublish.S3Data.Key)
 }
+
+func TestFinishedPublishQuery(t *testing.T) {
+	ctx := context.Background()
+	log.Println("starts add finish publish query...")
+	publishRepo := repos.NewPublishRepository(testDB)
+	testPublish := domain.PublishedScreenshot{
+		ID: uuid.New(),
+		S3Data: serializable.S3Screenshot{
+			Key:    "s3key",
+			Bucket: "s3Bucket",
+			S3Name: "selectel",
+		},
+	}
+	err := publishRepo.Add(ctx, testPublish)
+	if err != nil {
+		t.Fatal(err)
+	}
+	finishPubRepo := junction_repos2.NewFinishedPublishRepository(testDB)
+	e, err := finishPubRepo.Add(ctx, domain.FinishedPublish{
+		PublishID: testPublish.ID,
+		Result: serializable.NicknameResultWithConflicts{
+			Conflicts: []serializable.Conflict{
+				serializable.Conflict{
+					Similar: []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
+					Box: [4]serializable.Point{
+						serializable.Point{
+							X: 23,
+							Y: 32,
+						},
+						serializable.Point{
+							X: 23,
+							Y: 32,
+						},
+						serializable.Point{
+							X: 23,
+							Y: 32,
+						},
+						serializable.Point{
+							X: 23,
+							Y: 32,
+						},
+					},
+				},
+			},
+			NicknameIDs: []uuid.UUID{uuid.New(), uuid.New()},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, e.PublishID, testPublish.ID)
+	assert.Equal(t, len(e.Result.Conflicts), 1)
+	assert.Equal(t, len(e.Result.Conflicts[0].Similar), 3)
+	assert.Equal(t, len(e.Result.NicknameIDs), 2)
+}
