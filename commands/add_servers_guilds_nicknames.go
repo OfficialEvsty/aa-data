@@ -9,6 +9,7 @@ import (
 	"github.com/OfficialEvsty/aa-data/domain"
 	"github.com/OfficialEvsty/aa-data/domain/usecase"
 	repos2 "github.com/OfficialEvsty/aa-data/repos/interface"
+	junction_repos "github.com/OfficialEvsty/aa-data/repos/interface/junction"
 )
 
 // AddServersGuildsNicknamesCommand add all related entities together
@@ -21,7 +22,7 @@ type ServerImporter struct {
 	serverRepo repos2.IServerRepository
 	guildRepo  repos2.IGuildRepository
 	nickRepo   repos2.INicknameRepository
-	linkRepo   repos2.IGuildNicknameRepository
+	linkRepo   junction_repos.IGuildNicknameRepository
 }
 
 func NewServerImporter(
@@ -29,7 +30,7 @@ func NewServerImporter(
 	serverRepo repos2.IServerRepository,
 	guildRepo repos2.IGuildRepository,
 	nickRepo repos2.INicknameRepository,
-	linkRepo repos2.IGuildNicknameRepository,
+	linkRepo junction_repos.IGuildNicknameRepository,
 ) *ServerImporter {
 	return &ServerImporter{
 		tx:         tx,

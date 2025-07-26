@@ -1,4 +1,4 @@
-package repos
+package junction_repos
 
 import (
 	"context"

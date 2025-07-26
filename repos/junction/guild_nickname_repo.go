@@ -1,11 +1,11 @@
-package repos
+package junction_repos
 
 import (
 	"context"
 	"database/sql"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
-	repos "github.com/OfficialEvsty/aa-data/repos/interface"
+	junction_repos2 "github.com/OfficialEvsty/aa-data/repos/interface/junction"
 	"github.com/google/uuid"
 )
 
@@ -38,6 +38,6 @@ func (r *GuildNicknameRepository) ExcludeMember(context.Context, *domain.AANickn
 	return nil
 }
 
-func (r *GuildNicknameRepository) WithTx(tx *sql.Tx) repos.IGuildNicknameRepository {
+func (r *GuildNicknameRepository) WithTx(tx *sql.Tx) junction_repos2.IGuildNicknameRepository {
 	return &GuildNicknameRepository{tx}
 }
