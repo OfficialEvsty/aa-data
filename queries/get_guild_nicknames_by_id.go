@@ -3,6 +3,7 @@ package queries
 import (
 	"context"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
+	"github.com/OfficialEvsty/aa-shared/golinq"
 	"github.com/google/uuid"
 	"time"
 )
@@ -27,12 +28,16 @@ func NewGetGuildNicknamesByIdQuery(exec db.ISqlExecutor) GetGuildNicknamesByIdQu
 }
 
 func (q GetGuildNicknamesByIdQuery) Handle(ctx context.Context, guildIDs []uuid.UUID) ([]*GuildNicknameDTO, error) {
+
+	guildIDsStr := golinq.Map(guildIDs, func(id uuid.UUID) string {
+		return id.String()
+	})
 	query := `SELECT n.server_id, gn.guild_id, g.name, gn.nickname_id, n.name, n.created_at
 			  FROM aa_guild_nicknames AS gn
 			  JOIN aa_guilds AS g ON gn.guild_id = g.id
 			  JOIN aa_nicknames AS n ON gn.nickname_id = n.id
-			  WHERE gn.guild_id = ANY($1)`
-	rows, err := q.exec.QueryContext(ctx, query, guildIDs)
+			  WHERE gn.guild_id = ANY($1::uuid[])`
+	rows, err := q.exec.QueryContext(ctx, query, guildIDsStr)
 	if err != nil {
 		return nil, err
 	}

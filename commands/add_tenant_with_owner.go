@@ -39,12 +39,9 @@ func (h *TenantConstructor) Handle(ctx context.Context, cmd AddTenantWithOwnerCo
 			return err
 		}
 		log.Println("tenant owner: " + tenant.OwnerID.String())
-		found, err := h.tenantUserRepo.WithTx(tx).CheckUser(ctx, tenant.ID, tenant.OwnerID)
+		_, err = h.tenantUserRepo.WithTx(tx).CheckUser(ctx, tenant.ID, tenant.OwnerID)
 		if err != nil {
 			return err
-		}
-		if !found {
-			log.Println("tenant owner: " + tenant.OwnerID.String() + " not found")
 		}
 		return nil
 	})
