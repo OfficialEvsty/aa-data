@@ -347,6 +347,13 @@ func TestTenantUserRepository(t *testing.T) {
 		t.Fatalf("user %s not found in tenant %s", testUser1.ID, testTenant.ID)
 	}
 	t.Log("tenant user1 & user2 successfully retrieved ...")
+	found, err := tenantUserRepo.WithTx(tx).CheckUser(ctx, testTenant.ID, testUser2.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !found {
+		t.Fatalf("user %s not found in tenant %s", testUser2.ID, testTenant.ID)
+	}
 }
 
 func TestTenantPublishQuery(t *testing.T) {

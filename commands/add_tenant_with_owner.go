@@ -7,6 +7,7 @@ import (
 	"github.com/OfficialEvsty/aa-data/domain"
 	repos2 "github.com/OfficialEvsty/aa-data/repos/interface"
 	junction_repos "github.com/OfficialEvsty/aa-data/repos/interface/junction"
+	"log"
 )
 
 type AddTenantWithOwnerCommand struct {
@@ -36,6 +37,14 @@ func (h *TenantConstructor) Handle(ctx context.Context, cmd AddTenantWithOwnerCo
 		err = h.tenantUserRepo.WithTx(tx).Add(ctx, tenant.ID, tenant.OwnerID)
 		if err != nil {
 			return err
+		}
+		log.Println("tenant owner: " + tenant.OwnerID.String())
+		found, err := h.tenantUserRepo.WithTx(tx).CheckUser(ctx, tenant.ID, tenant.OwnerID)
+		if err != nil {
+			return err
+		}
+		if !found {
+			log.Println("tenant owner: " + tenant.OwnerID.String() + " not found")
 		}
 		return nil
 	})
