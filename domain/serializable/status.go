@@ -9,9 +9,10 @@ import (
 type Status string
 
 const (
-	StatusPending  Status = "pending"
-	StatusApproved Status = "approved"
-	StatusRejected Status = "rejected"
+	StatusUnrecognized   Status = "unrecognized"
+	StatusRecognized     Status = "recognized"
+	StatusRecognizeError Status = "error"
+	StatusResolved       Status = "resolved"
 )
 
 func (s Status) String() string {

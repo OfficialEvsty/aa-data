@@ -8,31 +8,45 @@ import (
 
 // Journal contains RaidRecord's mapped to specified guild
 type Journal struct {
-	RaidID  uuid.UUID `json:"raid_id"`
-	GuildID uuid.UUID `json:"guild_id"`
+	LunarkID uuid.UUID `json:"lunark_id"`
+	TenantID uuid.UUID `json:"tenant_id"`
 }
 
 // Lunark time interval closest to month, contains batch of raids entities to sort it
 type Lunark struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	StartDate time.Time `json:"start_date"`
-	EndDate   time.Time `json:"end_date"`
-	Opened    bool      `json:"opened"`
+	ID        uuid.UUID  `json:"id"`
+	Name      string     `json:"name"`
+	StartDate time.Time  `json:"start_date"`
+	EndDate   *time.Time `json:"end_date"`
+	Opened    bool       `json:"opened"`
+}
+
+type LunarkRaid struct {
+	LunarkID uuid.UUID `json:"lunark_id"`
+	RaidID   uuid.UUID `json:"raid_id"`
 }
 
 // Raid contains info about bosses and theirs loot, and guild's members participated this
 type Raid struct {
-	ID           uuid.UUID                 `json:"id"`
-	RaidImageURL serializable.S3Screenshot `json:"raid_image_url"`
-	OccurredAt   time.Time                 `json:"occurred_at"`
-	Status       serializable.Status       `json:"status"`
+	ID         uuid.UUID           `json:"id"`
+	PublishID  uuid.UUID           `json:"publish_id"`
+	RaidAt     *time.Time          `json:"raid_at"`
+	CreatedAt  time.Time           `json:"created_at"`
+	Attendance int                 `json:"attendance"`
+	Status     serializable.Status `json:"status"`
 }
 
 // RaidEvent mapped each raid to events which passed together
 type RaidEvent struct {
 	RaidID  uuid.UUID `json:"raid_id"`
-	EventID uuid.UUID `json:"event_id"`
+	EventID int       `json:"event_id"`
+}
+
+// RaidLoot concrete item's drop by provided raid
+type RaidLoot struct {
+	RaidID     uuid.UUID `json:"raid_id"`
+	TemplateID int64     `json:"template_id"`
+	Quantity   uint64    `json:"quantity"`
 }
 
 // Attendance shows nicknames which participating event
