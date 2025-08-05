@@ -31,8 +31,22 @@ func (r *GuildNicknameRepository) Add(ctx context.Context, guildID uuid.UUID, ni
 func (r *GuildNicknameRepository) GetGuild(context.Context, *domain.AANickname) (*domain.GuildNickname, error) {
 	return nil, nil
 }
-func (r *GuildNicknameRepository) GetMembers(context.Context, *domain.AAGuild) ([]*domain.GuildNickname, error) {
-	return nil, nil
+func (r *GuildNicknameRepository) GetMembers(ctx context.Context, guildID uuid.UUID) ([]uuid.UUID, error) {
+	query := `SELECT nickname_id FROM aa_guild_nicknames WHERE guild_id = $1;`
+	rows, err := r.exec.QueryContext(ctx, query, guildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var guildNicknameList []uuid.UUID
+	for rows.Next() {
+		var nicknameID uuid.UUID
+		if err = rows.Scan(&nicknameID); err != nil {
+			return nil, err
+		}
+		guildNicknameList = append(guildNicknameList, nicknameID)
+	}
+	return guildNicknameList, nil
 }
 func (r *GuildNicknameRepository) ExcludeMember(context.Context, *domain.AANickname) error {
 	return nil
