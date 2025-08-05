@@ -3,7 +3,6 @@ package domain
 import (
 	"encoding/json"
 	"github.com/OfficialEvsty/aa-data/domain/serializable"
-	"github.com/google/uuid"
 	"time"
 )
 
@@ -25,13 +24,13 @@ type AAEventTemplate struct {
 
 // EventBosses bound specified bosses to necessary in-game event
 type EventBosses struct {
-	BossID  int64     `json:"boss_id"`
-	EventID uuid.UUID `json:"event_id"`
+	BossID  int64 `json:"boss_id"`
+	EventID int   `json:"event_id"`
 }
 
 // Event shows when event occurred at and what his type is
 type Event struct {
-	ID         uuid.UUID `json:"id"`
+	ID         uint64    `json:"id"`
 	TemplateID int       `json:"template_id"`
 	OccurredAt time.Time `json:"occurred_at"`
 }

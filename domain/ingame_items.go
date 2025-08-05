@@ -20,7 +20,7 @@ type AAStorageItem struct {
 	TemplateID int64     `json:"template_id"`
 	StorageID  uuid.UUID `json:"storage_id"`
 	StoredAt   time.Time `json:"stored_at"`
-	Quantity   int64     `json:"quantity"`
+	Quantity   uint64    `json:"quantity"`
 }
 
 // AAStorage guild or user storage

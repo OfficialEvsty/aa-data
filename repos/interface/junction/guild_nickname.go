@@ -10,7 +10,7 @@ import (
 // IGuildNicknameRepository provides operation with guild members in db
 type IGuildNicknameRepository interface {
 	GetGuild(context.Context, *domain.AANickname) (*domain.GuildNickname, error)
-	GetMembers(context.Context, *domain.AAGuild) ([]*domain.GuildNickname, error)
+	GetMembers(context.Context, uuid.UUID) ([]uuid.UUID, error)
 	Add(context.Context, uuid.UUID, uuid.UUID) error
 	ExcludeMember(context.Context, *domain.AANickname) error
 	WithTx(*sql.Tx) IGuildNicknameRepository
