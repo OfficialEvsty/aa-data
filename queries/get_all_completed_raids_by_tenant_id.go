@@ -69,7 +69,9 @@ func (q *GetAllCompletedRaidsByTenantID) Handle(ctx context.Context, tenantID uu
 		attendanceSum = attendanceSum + r.Attendance
 		allRaidsDTO.Raids[r.ID] = &r
 	}
-	allRaidsDTO.Attendance = attendanceSum / uint(len(allRaidsDTO.Raids))
+	if len(allRaidsDTO.Raids) != 0 {
+		allRaidsDTO.Attendance = attendanceSum / uint(len(allRaidsDTO.Raids))
+	}
 	getRaidEventsQuery := `SELECT r.id, re.event_id, te.name
             			   FROM raid_events AS re
             			   JOIN raids AS r ON r.id = re.raid_id
