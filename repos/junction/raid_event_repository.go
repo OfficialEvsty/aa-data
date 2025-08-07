@@ -3,10 +3,12 @@ package junction_repos
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
 	junction_repos2 "github.com/OfficialEvsty/aa-data/repos/interface/junction"
 	"github.com/google/uuid"
+	"strings"
 )
 
 type RaidEventRepository struct {
@@ -25,6 +27,21 @@ func (r *RaidEventRepository) Add(ctx context.Context, re domain.RaidEvent) erro
 	}
 	return nil
 }
+
+func (r *RaidEventRepository) AddMany(ctx context.Context, raidID uuid.UUID, eventIDs []int) error {
+	valueStrings := make([]string, 0, len(eventIDs))
+	valueArgs := make([]interface{}, 0, len(eventIDs)*2)
+
+	for i, eventID := range eventIDs {
+		valueStrings = append(valueStrings, fmt.Sprintf("($%d,$%d)", i*2+1, i*2+2))
+		valueArgs = append(valueArgs, raidID, eventID)
+	}
+
+	stmt := fmt.Sprintf("INSERT INTO raid_events (raid_id, event_id) VALUES %s ON CONFLICT (raid_id, event_id) DO NOTHING", strings.Join(valueStrings, ","))
+	_, err := r.exec.ExecContext(ctx, stmt, valueArgs...)
+	return err
+}
+
 func (r *RaidEventRepository) Remove(ctx context.Context, rID uuid.UUID, eID int) error {
 	query := `DELETE FROM raid_events WHERE raid_id = $1 AND event_id = $2`
 	_, err := r.exec.ExecContext(ctx, query, rID, eID)
