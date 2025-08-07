@@ -76,7 +76,7 @@ func (r *RaidRepository) UpdateEndDateAndStatus(
 }
 
 func (r *RaidRepository) Remove(ctx context.Context, raidID uuid.UUID) error {
-	query := `DELETE FROM raids WHERE id = $1`
+	query := `UPDATE raids SET is_deleted = TRUE WHERE id = $1`
 	_, err := r.exec.ExecContext(ctx, query, raidID)
 	if err != nil {
 		return err
@@ -85,7 +85,7 @@ func (r *RaidRepository) Remove(ctx context.Context, raidID uuid.UUID) error {
 }
 func (r *RaidRepository) GetById(ctx context.Context, raidID uuid.UUID) (*domain.Raid, error) {
 	var raid domain.Raid
-	query := `SELECT id, publish_id, raid_at, attendance, status, created_at FROM raids WHERE id = $1`
+	query := `SELECT id, publish_id, raid_at, attendance, status, created_at FROM raids WHERE id = $1 AND is_deleted = FALSE`
 	row := r.exec.QueryRowContext(ctx, query, raidID)
 	err := row.Scan(
 		&raid.ID,

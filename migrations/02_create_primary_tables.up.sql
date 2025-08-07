@@ -15,13 +15,6 @@ CREATE TABLE IF NOT EXISTS tenants (
                                        owner_id UUID REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS events (
-    id BIGSERIAL PRIMARY KEY,
-    type SMALLINT NOT NULL,
-    raid_ref TEXT NULL,
-    created_at TIMESTAMPTZ DEFAULT now()
-);
-
 CREATE INDEX idx_email_users ON users(email);
 
 CREATE TABLE IF NOT EXISTS storage (

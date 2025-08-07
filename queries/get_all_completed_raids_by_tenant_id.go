@@ -76,7 +76,7 @@ func (q *GetAllCompletedRaidsByTenantID) Handle(ctx context.Context, tenantID uu
             			   FROM raid_events AS re
             			   JOIN raids AS r ON r.id = re.raid_id
             			   JOIN aa_template_events AS te ON re.event_id = te.id
-            			   WHERE re.raid_id = ANY($1)`
+            			   WHERE re.raid_id = ANY($1) AND r.is_deleted = FALSE`
 	var raids []*usecase.RaidDTO
 	for _, val := range allRaidsDTO.Raids {
 		raids = append(raids, val)

@@ -23,7 +23,7 @@ func (q *GetAllIncompleteRaidsQuery) Handle(ctx context.Context, userID uuid.UUI
 	query := `SELECT tp.user_id, r.id, tp.publish_id, r.status, r.created_at, r.raid_at
 			  FROM raids AS r 
 			  JOIN tenant_publishes AS tp ON tp.publish_id = r.publish_id
-			  WHERE tp.user_id = $1 AND r.status <> 'resolved'`
+			  WHERE tp.user_id = $1 AND r.status <> 'resolved' AND r.is_deleted = FALSE`
 	rows, err := q.exec.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
