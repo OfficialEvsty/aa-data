@@ -13,4 +13,5 @@ type IncompleteRaidDTO struct {
 	Status    serializable.Status `json:"status"`
 	CreatedAt time.Time           `json:"created_at"`
 	RaidAt    *time.Time          `json:"raid_at"`
+	Validated bool                `json:"validated"`
 }

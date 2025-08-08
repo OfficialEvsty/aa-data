@@ -20,7 +20,12 @@ func NewGetAllIncompleteRaidQuery(exec db.ISqlExecutor) *GetAllIncompleteRaidsQu
 
 func (q *GetAllIncompleteRaidsQuery) Handle(ctx context.Context, userID uuid.UUID) ([]*usecase.IncompleteRaidDTO, error) {
 	var incompleteRaids []*usecase.IncompleteRaidDTO
-	query := `SELECT tp.user_id, r.id, tp.publish_id, r.status, r.created_at, r.raid_at
+	query := `SELECT tp.user_id, r.id, tp.publish_id, r.status, r.created_at, r.raid_at, 
+       		  EXISTS (
+       		      SELECT 1
+       		      FROM raid_events re
+       		      WHERE re.raid_id = r.id
+       		  ) AS has_events
 			  FROM raids AS r 
 			  JOIN tenant_publishes AS tp ON tp.publish_id = r.publish_id
 			  WHERE tp.user_id = $1 AND r.status <> 'resolved' AND r.is_deleted = FALSE`
@@ -38,6 +43,7 @@ func (q *GetAllIncompleteRaidsQuery) Handle(ctx context.Context, userID uuid.UUI
 			&incompleteRaidDTO.Status,
 			&incompleteRaidDTO.CreatedAt,
 			&incompleteRaidDTO.RaidAt,
+			&incompleteRaidDTO.Validated,
 		)
 		if err != nil {
 			return nil, err
