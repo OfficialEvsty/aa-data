@@ -15,8 +15,8 @@ func NewGetRaidParticipantsInfoQuery(exec db.ISqlExecutor) *GetRaidParticipantsI
 	return &GetRaidParticipantsInfoQuery{exec}
 }
 
-func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uuid.UUID) (*usecase.RaidNicknamesAndConflictsWithS3Data, error) {
-	var dto usecase.RaidNicknamesAndConflictsWithS3Data
+func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uuid.UUID) (*usecase.RaidParticipantsWithS3Data, error) {
+	var dto usecase.RaidParticipantsWithS3Data
 	query := `SELECT
 				p.s3,
 				jsonb_set(
@@ -71,7 +71,7 @@ func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uui
 		publishID,
 	).Scan(
 		&dto.Snapshot,
-		&dto.NicknamesWithConflicts,
+		&dto.IssuedParticipants,
 	)
 	if err != nil {
 		return nil, err
