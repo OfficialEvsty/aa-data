@@ -20,9 +20,8 @@ func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uui
 	query := `SELECT
 				p.s3,
 				fp.result::jsonb
-					-- заменяем nickname_ids
 					|> jsonb_set(
-						'{nickname_ids}',
+						ARRAY['nickname_ids'],
 						(
 							SELECT jsonb_agg(
 								jsonb_build_object(
@@ -34,9 +33,8 @@ func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uui
 							LEFT JOIN aa_nicknames n ON n.id::text = nick_id
 						)
 					)
-					-- заменяем conflicts
 					|> jsonb_set(
-						'{conflicts}',
+						ARRAY['conflicts'],
 						(
 							SELECT jsonb_agg(
 								jsonb_build_object(
@@ -56,9 +54,9 @@ func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uui
 							FROM jsonb_array_elements(fp.result::jsonb->'conflicts') c
 						)
 					) AS new_data
-			FROM finished_publishes fp
-            JOIN publishes p ON p.id = fp.publish_id
-            WHERE p.id=$1;`
+				FROM finished_publishes fp
+				JOIN publishes p ON p.id = fp.publish_id
+				WHERE p.id = $1;`
 	err := q.exec.QueryRowContext(
 		ctx,
 		query,
