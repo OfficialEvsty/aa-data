@@ -19,46 +19,47 @@ func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uui
 	var dto usecase.RaidNicknamesAndConflictsWithS3Data
 	query := `SELECT
 				p.s3,
-				fp.result::jsonb
-					-- заменяем nickname_ids
-					|> jsonb_set(
-						'{nickname_ids}',
-						(
-							SELECT jsonb_agg(
-								jsonb_build_object(
-									'id', nick_id,
-									'name', n.name
-								)
-							)
-							FROM jsonb_array_elements_text(fp.result::jsonb->'nickname_ids') nick_id
-							LEFT JOIN aa_nicknames n ON n.id::text = nick_id
+				jsonb_set(
+				  jsonb_set(
+					fp.result::jsonb,
+					ARRAY['nickname_ids'],
+					(
+					  SELECT jsonb_agg(
+						jsonb_build_object(
+						  'id', nick_id,
+						  'name', n.name
 						)
+					  )
+					  FROM jsonb_array_elements_text(fp.result::jsonb->'nickname_ids') nick_id
+					  LEFT JOIN aa_nicknames n ON n.id::text = nick_id
+					  WHERE jsonb_typeof(fp.result::jsonb->'nickname_ids') = 'array'
 					)
-					-- заменяем conflicts
-					|> jsonb_set(
-						'{conflicts}',
-						(
-							SELECT jsonb_agg(
-								jsonb_build_object(
-									'box', c->'box',
-									'similar', (
-										SELECT jsonb_agg(
-											jsonb_build_object(
-												'id', sim_id,
-												'name', n.name
-											)
-										)
-										FROM jsonb_array_elements_text(c->'similar') sim_id
-										LEFT JOIN aa_nicknames n ON n.id::text = sim_id
-									)
-								)
+				  ),
+				  ARRAY['conflicts'],
+				  (
+					SELECT jsonb_agg(
+					  jsonb_build_object(
+						'box', c->'box',
+						'similar', (
+						  SELECT jsonb_agg(
+							jsonb_build_object(
+							  'id', sim_id,
+							  'name', n.name
 							)
-							FROM jsonb_array_elements(fp.result::jsonb->'conflicts') c
+						  )
+						  FROM jsonb_array_elements_text(c->'similar') sim_id
+						  LEFT JOIN aa_nicknames n ON n.id::text = sim_id
+						  WHERE jsonb_typeof(c->'similar') = 'array'
 						)
-					) AS new_data
+					  )
+					)
+					FROM jsonb_array_elements(fp.result::jsonb->'conflicts') c
+					WHERE jsonb_typeof(fp.result::jsonb->'conflicts') = 'array'
+				  )
+				) AS new_data
 			FROM finished_publishes fp
-            JOIN publishes p ON p.id = fp.publish_id
-            WHERE p.id=$1;`
+			JOIN publishes p ON p.id = fp.publish_id
+			WHERE p.id = $1;`
 	err := q.exec.QueryRowContext(
 		ctx,
 		query,
