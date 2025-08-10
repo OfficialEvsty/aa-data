@@ -8,7 +8,7 @@ import (
 
 // RaidNicknamesAndConflictsWithS3Data returns if raid unresolved
 type RaidNicknamesAndConflictsWithS3Data struct {
-	NicknamesWithConflicts json.RawMessage           `json:"nicknames_with_conflicts"`
+	NicknamesWithConflicts *json.RawMessage          `json:"nicknames_with_conflicts"`
 	Snapshot               serializable.S3Screenshot `json:"snapshot"`
 }
 
