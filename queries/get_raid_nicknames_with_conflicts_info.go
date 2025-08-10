@@ -19,7 +19,7 @@ func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uui
 	var dto usecase.RaidNicknamesAndConflictsWithS3Data
 	query := `SELECT
 				p.s3,
-				fp.result
+				fp.result::jsonb
 					-- заменяем nickname_ids
 					|> jsonb_set(
 						'{nickname_ids}',
@@ -30,7 +30,7 @@ func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uui
 									'name', n.name
 								)
 							)
-							FROM jsonb_array_elements_text(fp.result->'nickname_ids') nick_id
+							FROM jsonb_array_elements_text(fp.result::jsonb->'nickname_ids') nick_id
 							LEFT JOIN aa_nicknames n ON n.id::text = nick_id
 						)
 					)
@@ -53,7 +53,7 @@ func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uui
 									)
 								)
 							)
-							FROM jsonb_array_elements(fp.result->'conflicts') c
+							FROM jsonb_array_elements(fp.result::jsonb->'conflicts') c
 						)
 					) AS new_data
 			FROM finished_publishes fp
