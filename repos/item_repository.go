@@ -6,6 +6,7 @@ import (
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
 	repos "github.com/OfficialEvsty/aa-data/repos/interface"
+	"github.com/lib/pq"
 )
 
 type ItemRepository struct {
@@ -43,6 +44,27 @@ func (r *ItemRepository) Remove(ctx context.Context, id int64) error {
 func (r *ItemRepository) GetByID(ctx context.Context, id int64) (*domain.AAItemTemplate, error) {
 	var result domain.AAItemTemplate
 	return &result, nil
+}
+
+func (r *ItemRepository) GetByIDs(ctx context.Context, ids []int64) ([]*domain.AAItemTemplate, error) {
+	query := `SELECT id, name, tier, img_grade_url, img_url
+              FROM aa_items
+              WHERE id = ANY($1)`
+	rows, err := r.exec.QueryContext(ctx, query, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]*domain.AAItemTemplate, 0)
+	for rows.Next() {
+		var item domain.AAItemTemplate
+		err = rows.Scan(&item.ID, &item.Name, &item.Tier, &item.ImageURL, &item.ImageURL)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, &item)
+	}
+	return items, nil
 }
 
 func (r *ItemRepository) List(ctx context.Context) ([]*domain.AAItemTemplate, error) {

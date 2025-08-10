@@ -15,6 +15,7 @@ func NewGetRaidItemsQuery(exec db.ISqlExecutor) *GetRaidItemsQuery {
 	return &GetRaidItemsQuery{exec}
 }
 
+// deprecated
 func (q *GetRaidItemsQuery) Handle(ctx context.Context, raidID uuid.UUID) ([]*usecase.RaidItemDTO, error) {
 	query := `SELECT i.id, i.name, i.img_url, ri.rate
               FROM raid_items ri

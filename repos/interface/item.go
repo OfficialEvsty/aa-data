@@ -11,6 +11,7 @@ type IItemRepository interface {
 	Add(context.Context, domain.AAItemTemplate) (*domain.AAItemTemplate, error)
 	Remove(context.Context, int64) error
 	GetByID(context.Context, int64) (*domain.AAItemTemplate, error)
+	GetByIDs(context.Context, []int64) ([]*domain.AAItemTemplate, error)
 	List(context.Context) ([]*domain.AAItemTemplate, error)
 	WithTx(*sql.Tx) IItemRepository
 }
