@@ -8,11 +8,10 @@ import (
 
 // AABoss archeage strong enemy
 type AABoss struct {
-	ID            int64                     `json:"id"`
-	Name          string                    `json:"name"`
-	ImageGradeURL string                    `json:"img_grade_url"`
-	ImageURL      string                    `json:"image_url"`
-	Loot          serializable.DropItemList `json:"loot"`
+	ID       int64                     `json:"id"`
+	Name     string                    `json:"name"`
+	ImageURL string                    `json:"image_url"`
+	Loot     serializable.DropItemList `json:"loot"`
 }
 
 // AAEventTemplate in-game event with specified bosses and rewards provided in necessary timing intervals
