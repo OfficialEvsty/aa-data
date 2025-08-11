@@ -21,11 +21,6 @@ CREATE TABLE IF NOT EXISTS storage (
     id UUID PRIMARY KEY
 );
 
-CREATE TABLE IF NOT EXISTS user_activities (
-    event_id BIGSERIAL REFERENCES events(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE (event_id, user_id)
-);
 
 CREATE TABLE IF NOT EXISTS storage_aa_items (
     aa_item_id BIGSERIAL REFERENCES aa_items(id) ON DELETE CASCADE,

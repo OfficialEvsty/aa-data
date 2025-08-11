@@ -707,10 +707,9 @@ func TestAllRaidsReceiving(t *testing.T) {
 	cmd := commands.AddBossesDropAndItemsCommand{
 		Bosses: []*domain.AABoss{
 			{
-				ID:            1111,
-				Name:          "testBoss",
-				ImageGradeURL: "f",
-				ImageURL:      "f",
+				ID:       1111,
+				Name:     "testBoss",
+				ImageURL: "f",
 				Loot: serializable.DropItemList{
 					{
 						ItemID: 1110,

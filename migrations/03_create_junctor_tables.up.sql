@@ -18,17 +18,6 @@ CREATE TABLE IF NOT EXISTS aa_guild_users (
                                               UNIQUE (guild_id, user_id)
 );
 
-CREATE TABLE IF NOT EXISTS aa_guild_events (
-                                               guild_id UUID REFERENCES aa_guilds(id) ON DELETE CASCADE,
-                                               event_id BIGSERIAL REFERENCES events(id) ON DELETE CASCADE,
-                                               UNIQUE (guild_id, event_id)
-);
-
-CREATE TABLE IF NOT EXISTS aa_guild_storage (
-                                                guild_id UUID REFERENCES aa_guilds(id) ON DELETE CASCADE,
-                                                storage_id UUID REFERENCES storage(id) ON DELETE CASCADE,
-                                                UNIQUE(guild_id, storage_id)
-);
 
 CREATE TABLE IF NOT EXISTS aa_guild_nicknames (
                                                   guild_id UUID REFERENCES aa_guilds(id) ON DELETE CASCADE,
