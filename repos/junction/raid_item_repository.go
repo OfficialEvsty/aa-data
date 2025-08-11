@@ -48,6 +48,7 @@ func (r *RaidItemRepository) GetItems(ctx context.Context, raidID uuid.UUID) ([]
 	}
 	defer rows.Close()
 	var dropItems []*serializable.DropItem
+	dropItems = make([]*serializable.DropItem, 0)
 	for rows.Next() {
 		var dropItem serializable.DropItem
 		err = rows.Scan(
