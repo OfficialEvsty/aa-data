@@ -100,6 +100,25 @@ func (r *RaidRepository) GetById(ctx context.Context, raidID uuid.UUID) (*domain
 	}
 	return &raid, nil
 }
+
+func (r *RaidRepository) GetByPublishID(ctx context.Context, publishID uuid.UUID) (*domain.Raid, error) {
+	var raid domain.Raid
+	query := `SELECT id, publish_id, raid_at, attendance, status, created_at FROM raids WHERE publish_id = $1 AND is_deleted = FALSE`
+	row := r.exec.QueryRowContext(ctx, query, publishID)
+	err := row.Scan(
+		&raid.ID,
+		&raid.PublishID,
+		&raid.RaidAt,
+		&raid.Attendance,
+		&raid.Status,
+		&raid.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &raid, nil
+}
+
 func (r *RaidRepository) WithTx(tx *sql.Tx) repos.IRaidRepository {
 	return &RaidRepository{tx}
 }
