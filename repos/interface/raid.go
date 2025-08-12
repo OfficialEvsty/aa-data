@@ -23,5 +23,6 @@ type IRaidRepository interface {
 	) error
 	Remove(context.Context, uuid.UUID) error
 	GetById(context.Context, uuid.UUID) (*domain.Raid, error)
+	GetByPublishID(context.Context, uuid.UUID) (*domain.Raid, error)
 	WithTx(*sql.Tx) IRaidRepository
 }

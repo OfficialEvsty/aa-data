@@ -2,8 +2,10 @@ package junction_repos
 
 import (
 	"context"
+	"database/sql"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
+	junction_repos2 "github.com/OfficialEvsty/aa-data/repos/interface/junction"
 	"github.com/google/uuid"
 )
 
@@ -51,4 +53,8 @@ func (r *FinishedPublishRepository) Remove(ctx context.Context, publishID uuid.U
 	query := "DELETE FROM finished_publishes WHERE publish_id = $1"
 	_, err := r.exec.ExecContext(ctx, query, publishID)
 	return err
+}
+
+func (r *FinishedPublishRepository) WithTx(tx *sql.Tx) junction_repos2.IFinishedPublish {
+	return &FinishedPublishRepository{tx}
 }
