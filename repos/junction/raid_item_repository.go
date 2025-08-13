@@ -63,6 +63,12 @@ func (r *RaidItemRepository) GetItems(ctx context.Context, raidID uuid.UUID) ([]
 	return dropItems, nil
 }
 
+func (r *RaidItemRepository) RemoveItemsByRaidID(ctx context.Context, raidID uuid.UUID) error {
+	query := `DELETE FROM raid_items WHERE raid_id = $1`
+	_, err := r.exec.ExecContext(ctx, query, raidID)
+	return err
+}
+
 func (r *RaidItemRepository) WithTx(tx *sql.Tx) junction_repos.IRaidItemRepository {
 	return &RaidItemRepository{tx}
 }

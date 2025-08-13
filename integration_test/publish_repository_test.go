@@ -24,6 +24,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"log"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -847,4 +848,105 @@ func TestAllRaidsReceiving(t *testing.T) {
 	for _, e := range allRaids.Events {
 		t.Log(fmt.Sprintf("event: %d name: %s", e.TemplateID, e.Name))
 	}
+}
+
+func TestRaidItemsCleaningAndInserting(t *testing.T) {
+	ctx := context.Background()
+	log.Println("starts add event raids receiving...")
+	tx, err := testDB.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx = db.WithTxInContext(ctx, tx)
+	defer tx.Rollback()
+	raidRepo := repos.NewRaidRepository(testDB)
+	itemRepo := repos.NewItemRepository(testDB)
+	publishRepo := repos.NewPublishRepository(testDB)
+	raidItemRepo := junction_repos2.NewRaidItemRepository(testDB)
+	testItem := domain.AAItemTemplate{
+		ID:       1111,
+		Name:     "SuperTest",
+		Tier:     3,
+		ImageURL: "f",
+		TierURL:  "f",
+	}
+	_, err = itemRepo.WithTx(tx).Add(ctx, testItem)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testItem2 := domain.AAItemTemplate{
+		ID:       1121,
+		Name:     "SuTest",
+		Tier:     3,
+		ImageURL: "f",
+		TierURL:  "f",
+	}
+	_, err = itemRepo.WithTx(tx).Add(ctx, testItem2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pubTest := domain.PublishedScreenshot{
+		ID: uuid.New(),
+		S3Data: serializable.S3Screenshot{
+			Key:    "F",
+			Bucket: "F",
+			S3Name: "f",
+		},
+	}
+	err = publishRepo.WithTx(tx).Add(ctx, pubTest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testRaid := domain.Raid{
+		ID:        uuid.New(),
+		PublishID: pubTest.ID,
+		Status:    serializable.StatusUnrecognized,
+	}
+	err = raidRepo.WithTx(tx).Add(ctx, testRaid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	txManager := db.NewTxManager(testDB)
+	itemImporter := commands.NewDropItemCleanerAndImporter(txManager, raidItemRepo)
+	cmd1 := &commands.ClearAndAddItemsAsRaidDropByRaidIDCommand{
+		RaidID: testRaid.ID,
+		DropItemList: []*serializable.DropItem{
+			{
+				ItemID: 1111,
+				Rate:   strconv.Itoa(4),
+			},
+			{
+				ItemID: 1121,
+				Rate:   strconv.Itoa(2),
+			},
+		},
+	}
+	err = itemImporter.Handle(ctx, cmd1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	drops, err := raidItemRepo.WithTx(tx).GetItems(ctx, testRaid.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(drops), 2)
+	cmd := &commands.ClearAndAddItemsAsRaidDropByRaidIDCommand{
+		RaidID: testRaid.ID,
+		DropItemList: []*serializable.DropItem{
+			{
+				ItemID: 1111,
+				Rate:   strconv.Itoa(4),
+			},
+		},
+	}
+	err = itemImporter.Handle(ctx, cmd)
+	if err != nil {
+		t.Fatal(err)
+	}
+	drops, err = raidItemRepo.WithTx(tx).GetItems(ctx, testRaid.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(drops), 1)
+	assert.Equal(t, drops[0].ItemID, int64(1111))
 }
