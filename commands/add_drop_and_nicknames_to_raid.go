@@ -74,6 +74,7 @@ func (i *DropAndNicknamesImporter) Handle(ctx context.Context, cmd *AddDropAndNi
 				return err
 			}
 		}
-		return nil
+		err = i.raidRepo.WithTx(tx).UpdateStatus(ctx, cmd.RaidID, serializable.StatusResolved)
+		return err
 	})
 }

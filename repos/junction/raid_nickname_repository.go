@@ -44,6 +44,27 @@ func (r *RaidNicknameRepository) ClearNicknamesByRaidID(ctx context.Context, rai
 	return err
 }
 
+func (r *RaidNicknameRepository) GetNicknamesByRaidID(ctx context.Context, raidID uuid.UUID) ([]uuid.UUID, error) {
+	query := `SELECT raid_id, nickname_id FROM attendance WHERE raid_id = $1`
+	rows, err := r.exec.QueryContext(ctx, query, raidID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var nicknames []uuid.UUID
+	for rows.Next() {
+		var nickname uuid.UUID
+		if err = rows.Scan(&nickname); err != nil {
+			return nil, err
+		}
+		nicknames = append(nicknames, nickname)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return nicknames, nil
+}
+
 func (r *RaidNicknameRepository) WithTx(tx *sql.Tx) junction_repos.IRaidNicknameRepository {
 	return &RaidNicknameRepository{tx}
 }
