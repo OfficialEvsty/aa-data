@@ -51,7 +51,7 @@ func (r *RaidNicknameRepository) GetNicknamesByRaidID(ctx context.Context, raidI
 		return nil, err
 	}
 	defer rows.Close()
-	var nicknames []uuid.UUID
+	var nicknames = make([]uuid.UUID, 0)
 	for rows.Next() {
 		var nickname uuid.UUID
 		if err = rows.Scan(&nickname); err != nil {
