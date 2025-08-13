@@ -28,8 +28,17 @@ func (r *RaidRepository) Add(ctx context.Context, raid domain.Raid) error {
 	return nil
 }
 func (r *RaidRepository) Update(ctx context.Context, raid domain.Raid) error {
-	query := `UPDATE raids SET publish_id=$2, raid_at=$3, attendance=$4, status=$5 WHERE id=$1`
+	query := `UPDATE raids SET publish_id=$2, raid_at=$3, attendance=$4, status=$5, version=version+1 WHERE id=$1 AND is_deleted=FALSE`
 	_, err := r.exec.ExecContext(ctx, query, raid.ID, raid.PublishID, raid.RaidAt, raid.Attendance, raid.Status)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *RaidRepository) UpdateVersion(ctx context.Context, raidID uuid.UUID) error {
+	query := `UPDATE raids SET version=version+1 WHERE id=$1 AND is_deleted=FALSE`
+	_, err := r.exec.ExecContext(ctx, query, raidID)
 	if err != nil {
 		return err
 	}
@@ -85,7 +94,7 @@ func (r *RaidRepository) Remove(ctx context.Context, raidID uuid.UUID) error {
 }
 func (r *RaidRepository) GetById(ctx context.Context, raidID uuid.UUID) (*domain.Raid, error) {
 	var raid domain.Raid
-	query := `SELECT id, publish_id, raid_at, attendance, status, created_at FROM raids WHERE id = $1 AND is_deleted = FALSE`
+	query := `SELECT id, publish_id, raid_at, attendance, status, created_at, version FROM raids WHERE id = $1 AND is_deleted = FALSE`
 	row := r.exec.QueryRowContext(ctx, query, raidID)
 	err := row.Scan(
 		&raid.ID,
@@ -94,6 +103,7 @@ func (r *RaidRepository) GetById(ctx context.Context, raidID uuid.UUID) (*domain
 		&raid.Attendance,
 		&raid.Status,
 		&raid.CreatedAt,
+		&raid.Version,
 	)
 	if err != nil {
 		return nil, err
@@ -103,7 +113,7 @@ func (r *RaidRepository) GetById(ctx context.Context, raidID uuid.UUID) (*domain
 
 func (r *RaidRepository) GetByPublishID(ctx context.Context, publishID uuid.UUID) (*domain.Raid, error) {
 	var raid domain.Raid
-	query := `SELECT id, publish_id, raid_at, attendance, status, created_at FROM raids WHERE publish_id = $1 AND is_deleted = FALSE`
+	query := `SELECT id, publish_id, raid_at, attendance, status, created_at, version FROM raids WHERE publish_id = $1 AND is_deleted = FALSE`
 	row := r.exec.QueryRowContext(ctx, query, publishID)
 	err := row.Scan(
 		&raid.ID,
@@ -112,6 +122,7 @@ func (r *RaidRepository) GetByPublishID(ctx context.Context, publishID uuid.UUID
 		&raid.Attendance,
 		&raid.Status,
 		&raid.CreatedAt,
+		&raid.Version,
 	)
 	if err != nil {
 		return nil, err

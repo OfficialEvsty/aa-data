@@ -38,6 +38,12 @@ func (r *RaidNicknameRepository) RemoveNicknames(ctx context.Context, raidID uui
 	return err
 }
 
+func (r *RaidNicknameRepository) ClearNicknamesByRaidID(ctx context.Context, raidID uuid.UUID) error {
+	query := `DELETE FROM attendance WHERE raid_id = $1`
+	_, err := r.exec.ExecContext(ctx, query, raidID)
+	return err
+}
+
 func (r *RaidNicknameRepository) WithTx(tx *sql.Tx) junction_repos.IRaidNicknameRepository {
 	return &RaidNicknameRepository{tx}
 }

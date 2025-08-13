@@ -6,6 +6,7 @@ import (
 	"github.com/OfficialEvsty/aa-data/db"
 	"github.com/OfficialEvsty/aa-data/domain/serializable"
 	junction_repos "github.com/OfficialEvsty/aa-data/repos/interface/junction"
+	junction_repos2 "github.com/OfficialEvsty/aa-data/repos/junction"
 	"github.com/google/uuid"
 )
 
@@ -19,10 +20,10 @@ type DropItemCleanerAndImporter struct {
 	raidItemRepo junction_repos.IRaidItemRepository
 }
 
-func NewDropItemCleanerAndImporter(manager *db.TxManager, raidItemRepo junction_repos.IRaidItemRepository) *DropItemCleanerAndImporter {
+func NewDropItemCleanerAndImporter(sql *sql.DB) *DropItemCleanerAndImporter {
 	return &DropItemCleanerAndImporter{
-		txManager:    manager,
-		raidItemRepo: raidItemRepo,
+		txManager:    db.NewTxManager(sql),
+		raidItemRepo: junction_repos2.NewRaidItemRepository(sql),
 	}
 }
 

@@ -31,13 +31,16 @@ func NewAttendanceController(sql *sql.DB) *AttendanceController {
 	}
 }
 
-func (c *AttendanceController) Handle(ctx context.Context, cmd AddNicknamesToRaidCommand) error {
+func (c *AttendanceController) Handle(ctx context.Context, cmd *AddNicknamesToRaidCommand) error {
 	err := c.tx.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
 		err := c.raidRepo.WithTx(tx).UpdateAttendance(ctx, cmd.RaidID, cmd.Attendance)
 		if err != nil {
 			return err
 		}
-
+		err = c.raidNicknameRepo.WithTx(tx).ClearNicknamesByRaidID(ctx, cmd.RaidID)
+		if err != nil {
+			return err
+		}
 		err = c.raidNicknameRepo.WithTx(tx).AddNicknames(ctx, cmd.RaidID, cmd.NicknameIDs)
 		if err != nil {
 			return err

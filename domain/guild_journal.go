@@ -34,6 +34,7 @@ type Raid struct {
 	CreatedAt  time.Time           `json:"created_at"`
 	Attendance int                 `json:"attendance"`
 	Status     serializable.Status `json:"status"`
+	Version    int64               `json:"version"`
 }
 
 // RaidEvent mapped each raid to events which passed together
