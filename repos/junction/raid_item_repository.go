@@ -9,6 +9,7 @@ import (
 	junction_repos "github.com/OfficialEvsty/aa-data/repos/interface/junction"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"strconv"
 	"strings"
 )
 
@@ -27,7 +28,11 @@ func (r *RaidItemRepository) AddOrUpdateItems(ctx context.Context, raidID uuid.U
 
 	for i, drop := range drops {
 		valueStrings = append(valueStrings, fmt.Sprintf("($%d,$%d,$%d)", i*3+1, i*3+2, i*3+3))
-		valueArgs = append(valueArgs, raidID, drop.ItemID, drop.Rate)
+		rateInt, err := strconv.Atoi(drop.Rate)
+		if err != nil {
+			return err
+		}
+		valueArgs = append(valueArgs, raidID, drop.ItemID, rateInt)
 	}
 
 	stmt := fmt.Sprintf("INSERT INTO raid_items (raid_id, item_id, rate) VALUES %s ON CONFLICT (raid_id, item_id) DO UPDATE SET rate=EXCLUDED.rate", strings.Join(valueStrings, ","))

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/OfficialEvsty/aa-data/db"
+	db2 "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain/serializable"
 	"github.com/OfficialEvsty/aa-data/errors"
 	"github.com/OfficialEvsty/aa-data/repos"
@@ -31,7 +32,7 @@ type DropAndNicknamesImporter struct {
 	addRaidInTenant     *RaidImporter
 }
 
-func NewDropAndNicknamesImporter(sql *sql.DB) *DropAndNicknamesImporter {
+func NewDropAndNicknamesImporter(sql *db2.ISqlExecutor) *DropAndNicknamesImporter {
 	txManager := db.NewTxManager(sql)
 	raidRepo := repos.NewRaidRepository(sql)
 	addNicknamesCommand := NewAttendanceController(sql)
