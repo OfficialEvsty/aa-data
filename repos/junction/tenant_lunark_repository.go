@@ -25,6 +25,16 @@ func (r *TenantLunarkRepository) Add(ctx context.Context, entry domain.Journal) 
 	}
 	return nil
 }
+
+func (r *TenantLunarkRepository) CloseLunark(ctx context.Context, id uuid.UUID) error {
+	query := `UPDATE tenant_lunark SET opened = FALSE WHERE id = $1`
+	_, err := r.exec.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *TenantLunarkRepository) Remove(ctx context.Context, lunarkID uuid.UUID) error {
 	query := `DELETE FROM tenant_lunark WHERE lunark_id = $1`
 	_, err := r.exec.ExecContext(ctx, query, lunarkID)

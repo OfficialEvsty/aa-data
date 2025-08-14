@@ -27,8 +27,8 @@ func (r *LunarkRepository) Add(ctx context.Context, lunark domain.Lunark) error 
 	return nil
 }
 func (r *LunarkRepository) Update(ctx context.Context, lunark domain.Lunark) error {
-	query := `UPDATE lunark SET name = $2, start_date = $3, end_date = $4, opened = $5 WHERE id = $1`
-	_, err := r.exec.ExecContext(ctx, query, lunark.ID, lunark.Name, lunark.StartDate, lunark.EndDate, lunark.Opened)
+	query := `UPDATE lunark SET name = $2, start_date = $3, end_date = $4 WHERE id = $1`
+	_, err := r.exec.ExecContext(ctx, query, lunark.ID, lunark.Name, lunark.StartDate, lunark.EndDate)
 	if err != nil {
 		return err
 	}
@@ -44,24 +44,15 @@ func (r *LunarkRepository) UpdateEndDate(ctx context.Context, id uuid.UUID, end 
 	return nil
 }
 
-func (r *LunarkRepository) Close(ctx context.Context, id uuid.UUID) error {
-	query := `UPDATE lunark SET opened = FALSE WHERE id = $1`
-	_, err := r.exec.ExecContext(ctx, query, id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 func (r *LunarkRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Lunark, error) {
 	var lunark domain.Lunark
-	query := `SELECT id, name, start_date, end_date, opened FROM lunark WHERE id = $1`
+	query := `SELECT id, name, start_date, end_date FROM lunark WHERE id = $1`
 	row := r.exec.QueryRowContext(ctx, query, id)
 	err := row.Scan(
 		&lunark.ID,
 		&lunark.Name,
 		&lunark.StartDate,
 		&lunark.EndDate,
-		&lunark.Opened,
 	)
 	if err != nil {
 		return nil, err

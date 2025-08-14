@@ -18,7 +18,6 @@ type Lunark struct {
 	Name      string     `json:"name"`
 	StartDate time.Time  `json:"start_date"`
 	EndDate   *time.Time `json:"end_date"`
-	Opened    bool       `json:"opened"`
 }
 
 type LunarkRaid struct {

@@ -27,10 +27,10 @@ func NewGetOpenedLunarkByTenant(exec db.ISqlExecutor) GetOpenedLunarkByTenant {
 
 func (q *GetOpenedLunarkByTenant) Handle(ctx context.Context, tenantID uuid.UUID) (*OpenedLunark, error) {
 	var opened OpenedLunark
-	query := `SELECT tl.tenant_id, tl.lunark_id, l.name, l.start_date, l.end_date, l.opened
+	query := `SELECT tl.tenant_id, tl.lunark_id, l.name, l.start_date, l.end_date, tl.opened
 			  FROM tenant_lunark AS tl
 			  JOIN lunark AS l ON l.id = tl.lunark_id
-			  WHERE tl.tenant_id = $1 AND l.opened = TRUE`
+			  WHERE tl.tenant_id = $1 AND tl.opened = TRUE`
 
 	err := q.exec.QueryRowContext(ctx, query, tenantID).Scan(
 		&opened.TenantID,

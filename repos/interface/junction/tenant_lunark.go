@@ -10,6 +10,7 @@ import (
 type ITenantLunarkRepository interface {
 	Add(context.Context, domain.Journal) error
 	Remove(context.Context, uuid.UUID) error
+	CloseLunark(context.Context, uuid.UUID) error
 	All(context.Context, uuid.UUID) ([]*domain.Journal, error)
 	GetByID(context.Context, uuid.UUID) (*domain.Journal, error)
 	WithTx(*sql.Tx) ITenantLunarkRepository

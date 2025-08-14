@@ -9,6 +9,7 @@ import (
 	"github.com/OfficialEvsty/aa-data/db"
 	"github.com/OfficialEvsty/aa-data/domain"
 	"github.com/OfficialEvsty/aa-data/domain/serializable"
+	errors2 "github.com/OfficialEvsty/aa-data/errors"
 	integration "github.com/OfficialEvsty/aa-data/integration_test"
 	"github.com/OfficialEvsty/aa-data/queries"
 	"github.com/OfficialEvsty/aa-data/repos"
@@ -523,11 +524,6 @@ func TestLunarkRepository(t *testing.T) {
 	}
 	assert.Equal(t, receivedLunark.Name, testLunark.Name)
 	assert.Equal(t, receivedLunark.StartDate.Unix(), testLunark.StartDate.Unix())
-	assert.Equal(t, receivedLunark.Opened, true)
-	err = lunarkRepo.WithTx(tx).Close(ctx, testLunark.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
 	err = lunarkRepo.WithTx(tx).UpdateEndDate(ctx, testLunark.ID, testLunark.StartDate)
 	if err != nil {
 		t.Fatal(err)
@@ -536,7 +532,6 @@ func TestLunarkRepository(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, receivedLunark.Opened, false)
 	assert.Equal(t, receivedLunark.EndDate.Unix(), testLunark.StartDate.Unix())
 }
 
@@ -826,7 +821,7 @@ func TestAllRaidsReceiving(t *testing.T) {
 		NicknameIDs: nicknameIDs,
 		Attendance:  100,
 	}
-	err = addNicknamesToRaid.Handle(ctx, addNicknamesCmd)
+	err = addNicknamesToRaid.Handle(ctx, &addNicknamesCmd)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -906,8 +901,7 @@ func TestRaidItemsCleaningAndInserting(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	txManager := db.NewTxManager(testDB)
-	itemImporter := commands.NewDropItemCleanerAndImporter(txManager, raidItemRepo)
+	itemImporter := commands.NewDropItemCleanerAndImporter(testDB)
 	cmd1 := &commands.ClearAndAddItemsAsRaidDropByRaidIDCommand{
 		RaidID: testRaid.ID,
 		DropItemList: []*serializable.DropItem{
@@ -949,4 +943,192 @@ func TestRaidItemsCleaningAndInserting(t *testing.T) {
 	}
 	assert.Equal(t, len(drops), 1)
 	assert.Equal(t, drops[0].ItemID, int64(1111))
+}
+
+func TestAddOrUpdateRaidDataCommand(t *testing.T) {
+	ctx := context.Background()
+	log.Println("starts add raid command...")
+	tx, err := testDB.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx = db.WithTxInContext(ctx, tx)
+	defer tx.Rollback()
+	raidRepo := repos.NewRaidRepository(testDB)
+	itemRepo := repos.NewItemRepository(testDB)
+	publishRepo := repos.NewPublishRepository(testDB)
+	nicknameRepo := repos.NewNicknameRepo(testDB)
+	serverRepo := repos.NewServerRepository(testDB)
+	tenantRepo := repos.NewTenantRepository(testDB)
+	userRepo := repos.NewUserRepository(testDB)
+	testUser := domain.User{
+		ID:       uuid.New(),
+		Username: "f",
+		Email:    "f",
+	}
+	_, err = userRepo.WithTx(tx).AddOrUpdate(ctx, testUser)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testTenant := domain.Tenant{
+		ID:      uuid.New(),
+		Name:    "Test",
+		OwnerID: testUser.ID,
+	}
+	_, err = tenantRepo.WithTx(tx).Add(ctx, testTenant)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testPub := domain.PublishedScreenshot{
+		ID: uuid.New(),
+		S3Data: serializable.S3Screenshot{
+			Key:    "F",
+			Bucket: "F",
+			S3Name: "f",
+		},
+	}
+	tenantPublishRepo := junction_repos2.NewTenantPublishRepository(testDB)
+
+	err = publishRepo.WithTx(tx).Add(ctx, testPub)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = tenantPublishRepo.WithTx(tx).Add(
+		ctx,
+		domain.TenantPublish{
+			UserID:    testUser.ID,
+			TenantID:  testTenant.ID,
+			PublishID: testPub.ID,
+		},
+	)
+	testRaid := domain.Raid{
+		ID:        uuid.New(),
+		PublishID: testPub.ID,
+		Status:    serializable.StatusRecognized,
+	}
+	_ = raidRepo.WithTx(tx).Add(ctx, testRaid)
+	testItem1 := domain.AAItemTemplate{
+		ID:       1111,
+		Name:     "SuperTest",
+		Tier:     3,
+		ImageURL: "f",
+		TierURL:  "f",
+	}
+	testItem2 := domain.AAItemTemplate{
+		ID:       1121,
+		Name:     "SuperTest",
+		Tier:     3,
+		ImageURL: "f",
+		TierURL:  "f",
+	}
+	_, err = itemRepo.WithTx(tx).Add(ctx, testItem1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = itemRepo.WithTx(tx).Add(ctx, testItem2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testServer := domain.AAServer{
+		ID:         uuid.New(),
+		Name:       "test",
+		ExternalID: "23",
+	}
+	server, err := serverRepo.WithTx(tx).Add(ctx, testServer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testNickname1 := domain.AANickname{
+		ID:       uuid.New(),
+		ServerID: server.ID,
+		Name:     "ffddf",
+	}
+	testNickname2 := domain.AANickname{
+		ID:       uuid.New(),
+		ServerID: server.ID,
+		Name:     "ffdf",
+	}
+	nick1, err := nicknameRepo.WithTx(tx).Create(ctx, testNickname1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	nick2, err := nicknameRepo.WithTx(tx).Create(ctx, testNickname2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// preparations done, starts running a command
+	// failed create raid (without nicknames provided) & creating lunark (failed)
+	addOrUpdateRaidDataCommand := commands.NewDropAndNicknamesImporter(testDB)
+	cmd := &commands.AddDropAndNicknamesToRaidCommand{
+		RaidID:      testRaid.ID,
+		TenantID:    testTenant.ID,
+		LunarkID:    uuid.Nil,
+		Version:     1,
+		NicknameIDs: []uuid.UUID{},
+		Attendance:  10,
+		DropItemList: []*serializable.DropItem{
+			{ItemID: testItem1.ID, Rate: "3"},
+			{ItemID: testItem2.ID, Rate: "3"},
+		},
+	}
+	err = addOrUpdateRaidDataCommand.Handle(ctx, cmd)
+	if err != nil {
+		if !errors.Is(err, errors2.ErrorRaidPartialSavedRestricted) {
+			t.Fatal(err)
+		}
+		t.Log(err)
+	}
+	getAllCompleteRaidsQuery := queries.NewGetAllCompletedRaidsByTenantID(testDB)
+	data, err := getAllCompleteRaidsQuery.WithTx(tx).Handle(ctx, testTenant.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(data.Raids), 0)
+	raidNicknameRepo := junction_repos2.NewRaidNicknameRepository(testDB)
+	nicks, err := raidNicknameRepo.WithTx(tx).GetNicknamesByRaidID(ctx, testRaid.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(nicks), 0)
+
+	raidItemRepo := junction_repos2.NewRaidItemRepository(testDB)
+	items, err := raidItemRepo.WithTx(tx).GetItems(ctx, testRaid.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(items), 0)
+	t.Log("successfully creating raid with provided data")
+	cmdSuccess := &commands.AddDropAndNicknamesToRaidCommand{
+		RaidID:      testRaid.ID,
+		TenantID:    testTenant.ID,
+		LunarkID:    uuid.Nil,
+		Version:     1,
+		NicknameIDs: []uuid.UUID{nick1.ID, nick2.ID},
+		Attendance:  10,
+		DropItemList: []*serializable.DropItem{
+			{ItemID: testItem1.ID, Rate: "3"},
+			{ItemID: testItem2.ID, Rate: "3"},
+		},
+	}
+	err = addOrUpdateRaidDataCommand.Handle(ctx, cmdSuccess)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err = getAllCompleteRaidsQuery.WithTx(tx).Handle(ctx, testTenant.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(data.Raids), 1)
+	require.NotNil(t, data.Lunark)
+	nicks, err = raidNicknameRepo.WithTx(tx).GetNicknamesByRaidID(ctx, testRaid.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(nicks), 2)
+
+	items, err = raidItemRepo.WithTx(tx).GetItems(ctx, testRaid.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(items), 2)
 }

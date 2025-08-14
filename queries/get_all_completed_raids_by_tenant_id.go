@@ -21,7 +21,7 @@ func NewGetAllCompletedRaidsByTenantID(exec db.ISqlExecutor) *GetAllCompletedRai
 func (q *GetAllCompletedRaidsByTenantID) Handle(ctx context.Context, tenantID uuid.UUID) (*usecase.AllRaidsByTenantDTO, error) {
 	getOpenedLunarkQuery := `SELECT l.id, l.name, l.start_date, l.end_date FROM tenant_lunark tl
 							 JOIN lunark l ON l.id = tl.lunark_id           
-							 WHERE tl.tenant_id = $1 AND l.opened = TRUE`
+							 WHERE tl.tenant_id = $1 AND tl.opened = TRUE`
 	var lunarkDTO usecase.LunarkDTO
 	var lunarkID uuid.UUID
 	err := q.exec.QueryRowContext(

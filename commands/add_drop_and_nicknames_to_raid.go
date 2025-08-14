@@ -9,9 +9,12 @@ import (
 	"github.com/OfficialEvsty/aa-data/repos"
 	repos2 "github.com/OfficialEvsty/aa-data/repos/interface"
 	"github.com/google/uuid"
+	"time"
 )
 
 type AddDropAndNicknamesToRaidCommand struct {
+	TenantID     uuid.UUID                `json:"tenant_id"`
+	LunarkID     uuid.UUID                `json:"lunark_id"`
 	RaidID       uuid.UUID                `json:"raid_id"`
 	Version      int64                    `json:"version"`
 	NicknameIDs  []uuid.UUID              `json:"nickname_ids"`
@@ -24,6 +27,8 @@ type DropAndNicknamesImporter struct {
 	raidRepo            repos2.IRaidRepository
 	addNicknamesCommand *AttendanceController
 	addDropCommand      *DropItemCleanerAndImporter
+	addLunarkInTenant   *LunarkImporter
+	addRaidInTenant     *RaidImporter
 }
 
 func NewDropAndNicknamesImporter(sql *sql.DB) *DropAndNicknamesImporter {
@@ -31,16 +36,21 @@ func NewDropAndNicknamesImporter(sql *sql.DB) *DropAndNicknamesImporter {
 	raidRepo := repos.NewRaidRepository(sql)
 	addNicknamesCommand := NewAttendanceController(sql)
 	addDropCommand := NewDropItemCleanerAndImporter(sql)
+	addLunarkInTenant := NewLunarkImporter(sql)
+	addRaidInTenant := NewRaidInLunarkCommand(sql)
 	return &DropAndNicknamesImporter{
 		txManager:           txManager,
 		raidRepo:            raidRepo,
 		addNicknamesCommand: addNicknamesCommand,
 		addDropCommand:      addDropCommand,
+		addLunarkInTenant:   addLunarkInTenant,
+		addRaidInTenant:     addRaidInTenant,
 	}
 }
 
 func (i *DropAndNicknamesImporter) Handle(ctx context.Context, cmd *AddDropAndNicknamesToRaidCommand) error {
 	return i.txManager.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
+		ctx = db.WithTxInContext(ctx, tx)
 		raid, err := i.raidRepo.WithTx(tx).GetById(ctx, cmd.RaidID)
 		if err != nil {
 			return err
@@ -74,7 +84,34 @@ func (i *DropAndNicknamesImporter) Handle(ctx context.Context, cmd *AddDropAndNi
 				return err
 			}
 		}
-		err = i.raidRepo.WithTx(tx).UpdateStatus(ctx, cmd.RaidID, serializable.StatusResolved)
-		return err
+		lunarkID := cmd.LunarkID
+		raidAt := time.Now()
+		if lunarkID == uuid.Nil {
+			lunarkID = uuid.New()
+			if raid.RaidAt != nil {
+				raidAt = *raid.RaidAt
+			}
+			lcmd := AddLunarkAttendedToTenantCommand{
+				TenantID:  cmd.TenantID,
+				LunarkID:  lunarkID,
+				StartDate: raidAt,
+			}
+			err = i.addLunarkInTenant.Handle(ctx, lcmd)
+			if err != nil {
+				return err
+			}
+		}
+		rcmd := AddRaidInLunarkCommand{
+			LunarkID:   lunarkID,
+			RaidID:     cmd.RaidID,
+			Status:     serializable.StatusResolved,
+			RaidAt:     &raidAt,
+			Attendance: cmd.Attendance,
+		}
+		err = i.addRaidInTenant.Handle(ctx, rcmd)
+		if err != nil {
+			return err
+		}
+		return nil
 	})
 }
