@@ -18,7 +18,7 @@ func NewLunarkRaidRepository(exec db.ISqlExecutor) *LunarkRaidRepository {
 }
 
 func (r *LunarkRaidRepository) Add(ctx context.Context, lunark domain.LunarkRaid) error {
-	query := `INSERT INTO lunark_raids (lunark_id, raid_id) VALUES ($1, $2)`
+	query := `INSERT INTO lunark_raids (lunark_id, raid_id) VALUES ($1, $2) ON CONFLICT (lunark_id, raid_id) DO NOTHING`
 	_, err := r.exec.ExecContext(ctx, query, lunark.LunarkID, lunark.RaidID)
 	if err != nil {
 		return err
