@@ -57,6 +57,10 @@ func (ri *RaidImporter) Handle(ctx context.Context, cmd AddRaidInLunarkCommand) 
 		if err != nil {
 			return err
 		}
+		err = ri.raidRepo.WithTx(tx).UpdateVersion(ctx, cmd.RaidID)
+		if err != nil {
+			return err
+		}
 		err = ri.lunarkRepo.WithTx(tx).UpdateEndDate(ctx, cmd.LunarkID, RaidAt)
 		if err != nil {
 			return err
