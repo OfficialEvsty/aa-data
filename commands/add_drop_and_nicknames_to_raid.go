@@ -74,16 +74,15 @@ func (i *DropAndNicknamesImporter) Handle(ctx context.Context, cmd *AddDropAndNi
 				return err
 			}
 		}
-		if len(cmd.DropItemList) > 0 {
-			dCmd := &ClearAndAddItemsAsRaidDropByRaidIDCommand{
-				DropItemList: cmd.DropItemList,
-				RaidID:       cmd.RaidID,
-			}
-			err = i.addDropCommand.Handle(ctx, dCmd)
-			if err != nil {
-				return err
-			}
+		dCmd := &ClearAndAddItemsAsRaidDropByRaidIDCommand{
+			DropItemList: cmd.DropItemList,
+			RaidID:       cmd.RaidID,
 		}
+		err = i.addDropCommand.Handle(ctx, dCmd)
+		if err != nil {
+			return err
+		}
+
 		lunarkID := cmd.LunarkID
 		raidAt := time.Now()
 		if lunarkID == uuid.Nil {
