@@ -53,7 +53,7 @@ func (ri *RaidImporter) Handle(ctx context.Context, cmd AddRaidInLunarkCommand) 
 			return errors.New("raid_at is required")
 		}
 		RaidAt := *cmd.RaidAt
-		err = ri.raidRepo.WithTx(tx).UpdateEndDateAndStatus(ctx, cmd.RaidID, RaidAt, cmd.Status)
+		err = ri.raidRepo.WithTx(tx).UpdateStatus(ctx, cmd.RaidID, cmd.Status)
 		if err != nil {
 			return err
 		}
