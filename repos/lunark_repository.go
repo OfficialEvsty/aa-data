@@ -36,7 +36,7 @@ func (r *LunarkRepository) Update(ctx context.Context, lunark domain.Lunark) err
 }
 
 func (r *LunarkRepository) UpdateEndDate(ctx context.Context, id uuid.UUID, end time.Time) error {
-	query := `UPDATE lunark SET end_date = $2 WHERE id = $1`
+	query := `UPDATE lunark SET end_date = $2 WHERE id = $1 AND (end_date IS NULL OR $2 > end_date);`
 	_, err := r.exec.ExecContext(ctx, query, id, end)
 	if err != nil {
 		return err
