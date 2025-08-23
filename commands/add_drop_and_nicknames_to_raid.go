@@ -85,11 +85,11 @@ func (i *DropAndNicknamesImporter) Handle(ctx context.Context, cmd *AddDropAndNi
 
 		lunarkID := cmd.LunarkID
 		raidAt := time.Now()
+		if raid.RaidAt != nil {
+			raidAt = *raid.RaidAt
+		}
 		if lunarkID == uuid.Nil {
 			lunarkID = uuid.New()
-			if raid.RaidAt != nil {
-				raidAt = *raid.RaidAt
-			}
 			lcmd := AddLunarkAttendedToTenantCommand{
 				TenantID:  cmd.TenantID,
 				LunarkID:  lunarkID,
