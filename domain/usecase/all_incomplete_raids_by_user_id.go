@@ -14,5 +14,6 @@ type IncompleteRaidDTO struct {
 	S3Data    serializable.S3Screenshot `json:"s3_data"`
 	CreatedAt time.Time                 `json:"created_at"`
 	RaidAt    *time.Time                `json:"raid_at"`
+	Events    []*EventDTO               `json:"events"`
 	Validated bool                      `json:"validated"`
 }
