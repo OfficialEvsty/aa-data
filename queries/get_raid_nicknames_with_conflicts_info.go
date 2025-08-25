@@ -18,53 +18,73 @@ func NewGetRaidParticipantsInfoQuery(exec db.ISqlExecutor) *GetRaidParticipantsI
 func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uuid.UUID) (*usecase.RaidParticipantsWithS3Data, error) {
 	var dto usecase.RaidParticipantsWithS3Data
 	query := `SELECT
-				p.s3,
-				jsonb_set(
+				  p.s3,
 				  jsonb_set(
-					fp.result::jsonb,
-					ARRAY['nickname_ids'],
-					CASE 
-					  WHEN jsonb_typeof(fp.result::jsonb->'nickname_ids') = 'array' THEN
-						(
-						  SELECT jsonb_agg(
-							jsonb_build_object(
-							  'id', nick_id,
-							  'name', n.name
-							)
+					jsonb_set(
+					  COALESCE(fp.result::jsonb, '{}'::jsonb),
+					  '{nicknames}',
+					  CASE
+						WHEN jsonb_typeof(fp.result::jsonb->'nicknames') = 'array' THEN
+						  COALESCE(
+							(
+							  SELECT jsonb_agg(
+									   jsonb_build_object(
+										 'id',   nick->>'id',
+										 'box',  nick->'box',
+										 'name', n.name
+									   )
+									 )
+							  FROM jsonb_array_elements(
+									 COALESCE(fp.result::jsonb->'nicknames', '[]'::jsonb)
+								   ) AS nick
+							  LEFT JOIN aa_nicknames n ON n.id::text = nick->>'id'
+							),
+							'[]'::jsonb
 						  )
-						  FROM jsonb_array_elements_text(fp.result::jsonb->'nickname_ids') nick_id
-						  LEFT JOIN aa_nicknames n ON n.id::text = nick_id
+						ELSE '[]'::jsonb
+					  END,
+					  true
+					),
+					'{conflicts}',
+					CASE
+					  WHEN jsonb_typeof(fp.result::jsonb->'conflicts') = 'array' THEN
+						COALESCE(
+						  (
+							SELECT jsonb_agg(
+									 jsonb_build_object(
+									   'box', c->'box',
+									   'similar',
+										 COALESCE(
+										   (
+											 SELECT jsonb_agg(
+													  jsonb_build_object(
+														'id',   sim->>'id',
+														'box',  sim->'box',
+														'name', n.name
+													  )
+													)
+											 FROM jsonb_array_elements(
+													COALESCE(c->'similar', '[]'::jsonb)
+												  ) AS sim
+											 LEFT JOIN aa_nicknames n ON n.id::text = sim->>'id'
+										   ),
+										   '[]'::jsonb
+										 )
+									 )
+								   )
+							FROM jsonb_array_elements(
+								   COALESCE(fp.result::jsonb->'conflicts', '[]'::jsonb)
+								 ) AS c
+						  ),
+						  '[]'::jsonb
 						)
 					  ELSE '[]'::jsonb
-					END
-				  ),
-				  ARRAY['conflicts'],
-				  CASE
-					WHEN jsonb_typeof(fp.result::jsonb->'conflicts') = 'array' THEN
-					  (
-						SELECT jsonb_agg(
-						  jsonb_build_object(
-							'box', c->'box',
-							'similar', (
-							  SELECT jsonb_agg(
-								jsonb_build_object(
-								  'id', sim_id,
-								  'name', n.name
-								)
-							  )
-							  FROM jsonb_array_elements_text(c->'similar') sim_id
-							  LEFT JOIN aa_nicknames n ON n.id::text = sim_id
-							)
-						  )
-						)
-						FROM jsonb_array_elements(fp.result::jsonb->'conflicts') c
-					  )
-					ELSE '[]'::jsonb
-				  END
-				) AS new_data
-			FROM finished_publishes fp
-			JOIN publishes p ON p.id = fp.publish_id
-			WHERE p.id = $1;`
+					END,
+					true
+				  ) AS new_data
+				FROM finished_publishes fp
+				JOIN publishes p ON p.id = fp.publish_id
+				WHERE p.id = $1;`
 	err := q.exec.QueryRowContext(
 		ctx,
 		query,

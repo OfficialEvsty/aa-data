@@ -30,6 +30,23 @@ type Conflict struct {
 	Box     [4]Point    `json:"box"`
 }
 
+type Nickname struct {
+	ID  uuid.UUID `json:"id"`
+	Box [4]Point  `json:"box"`
+}
+
+func (s *Nickname) Scan(src interface{}) error {
+	bytes, ok := src.([]byte)
+	if !ok {
+		return fmt.Errorf("type assertion .([]byte) failed")
+	}
+	return json.Unmarshal(bytes, s)
+}
+
+func (s Nickname) Value() (driver.Value, error) {
+	return json.Marshal(s)
+}
+
 func (s *Conflict) Scan(src interface{}) error {
 	bytes, ok := src.([]byte)
 	if !ok {
@@ -44,8 +61,8 @@ func (s Conflict) Value() (driver.Value, error) {
 
 // NicknameResultWithConflicts result of nicknames recognition
 type NicknameResultWithConflicts struct {
-	Conflicts   []Conflict  `json:"conflicts"`
-	NicknameIDs []uuid.UUID `json:"nickname_ids"`
+	Conflicts []Conflict `json:"conflicts"`
+	Nicknames []Nickname `json:"nicknames"`
 }
 
 func (s *NicknameResultWithConflicts) Scan(src interface{}) error {
