@@ -3,9 +3,10 @@ package commands
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/OfficialEvsty/aa-data/db"
 	"github.com/OfficialEvsty/aa-data/domain/serializable"
-	"github.com/OfficialEvsty/aa-data/errors"
+	errors2 "github.com/OfficialEvsty/aa-data/errors"
 	"github.com/OfficialEvsty/aa-data/repos"
 	repos2 "github.com/OfficialEvsty/aa-data/repos/interface"
 	"github.com/google/uuid"
@@ -56,12 +57,12 @@ func (i *DropAndNicknamesImporter) Handle(ctx context.Context, cmd *AddDropAndNi
 			return err
 		}
 		if raid.Version != cmd.Version {
-			return errors.ErrorRaidVersionMismatch
+			return errors2.ErrorRaidVersionMismatch
 		}
 		var raidNotBeenResolvedEarlier = raid.Status != serializable.StatusResolved &&
 			(cmd.NicknameIDs == nil || len(cmd.NicknameIDs) == 0)
 		if raidNotBeenResolvedEarlier {
-			return errors.ErrorRaidPartialSavedRestricted
+			return errors2.ErrorRaidPartialSavedRestricted
 		}
 		if len(cmd.NicknameIDs) > 0 {
 			nCmd := &AddNicknamesToRaidCommand{
@@ -74,15 +75,18 @@ func (i *DropAndNicknamesImporter) Handle(ctx context.Context, cmd *AddDropAndNi
 				return err
 			}
 		}
-		dCmd := &ClearAndAddItemsAsRaidDropByRaidIDCommand{
-			DropItemList: cmd.DropItemList,
-			RaidID:       cmd.RaidID,
+		if len(cmd.DropItemList) > 0 {
+			dCmd := &ClearAndAddItemsAsRaidDropByRaidIDCommand{
+				DropItemList: cmd.DropItemList,
+				RaidID:       cmd.RaidID,
+			}
+			err = i.addDropCommand.Handle(ctx, dCmd)
+			if err != nil {
+				if !errors.Is(err, errors2.ErrorItemListEmpty) {
+					return err
+				}
+			}
 		}
-		err = i.addDropCommand.Handle(ctx, dCmd)
-		if err != nil {
-			return err
-		}
-
 		lunarkID := cmd.LunarkID
 		raidAt := time.Now()
 		if raid.RaidAt != nil {

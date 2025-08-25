@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/OfficialEvsty/aa-data/db"
 	"github.com/OfficialEvsty/aa-data/domain/serializable"
+	"github.com/OfficialEvsty/aa-data/errors"
 	junction_repos "github.com/OfficialEvsty/aa-data/repos/interface/junction"
 	junction_repos2 "github.com/OfficialEvsty/aa-data/repos/junction"
 	"github.com/google/uuid"
@@ -28,6 +29,9 @@ func NewDropItemCleanerAndImporter(sql *sql.DB) *DropItemCleanerAndImporter {
 }
 
 func (ci *DropItemCleanerAndImporter) Handle(ctx context.Context, cmd *ClearAndAddItemsAsRaidDropByRaidIDCommand) error {
+	if len(cmd.DropItemList) == 0 {
+		return errors.ErrorItemListEmpty
+	}
 	err := ci.txManager.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
 		err := ci.raidItemRepo.WithTx(tx).RemoveItemsByRaidID(ctx, cmd.RaidID)
 		if err != nil {

@@ -22,7 +22,6 @@ func NewRaidItemRepository(exec db.ISqlExecutor) *RaidItemRepository {
 }
 
 func (r *RaidItemRepository) AddOrUpdateItems(ctx context.Context, raidID uuid.UUID, drops []*serializable.DropItem) error {
-
 	valueStrings := make([]string, 0, len(drops))
 	valueArgs := make([]interface{}, 0, len(drops)*2)
 
