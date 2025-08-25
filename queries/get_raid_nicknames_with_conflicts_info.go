@@ -22,22 +22,18 @@ func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uui
 				  jsonb_set(
 					jsonb_set(
 					  COALESCE(fp.result::jsonb, '{}'::jsonb),
-					  '{nicknames}',
+					  '{nickname_ids}',
 					  CASE
-						WHEN jsonb_typeof(fp.result::jsonb->'nicknames') = 'array' THEN
+						WHEN jsonb_typeof(fp.result::jsonb->'nickname_ids') = 'array' THEN
 						  COALESCE(
 							(
 							  SELECT jsonb_agg(
-									   jsonb_build_object(
-										 'id',   nick->>'id',
-										 'box',  nick->'box',
-										 'name', n.name
-									   )
+									   jsonb_build_object('id', nick_id, 'name', n.name)
 									 )
-							  FROM jsonb_array_elements(
-									 COALESCE(fp.result::jsonb->'nicknames', '[]'::jsonb)
-								   ) AS nick
-							  LEFT JOIN aa_nicknames n ON n.id::text = nick->>'id'
+							  FROM jsonb_array_elements_text(
+									 COALESCE(fp.result::jsonb->'nickname_ids', '[]'::jsonb)
+								   ) AS nick_id
+							  LEFT JOIN aa_nicknames n ON n.id::text = nick_id
 							),
 							'[]'::jsonb
 						  )
@@ -57,16 +53,12 @@ func (q *GetRaidParticipantsInfoQuery) Handle(ctx context.Context, publishID uui
 										 COALESCE(
 										   (
 											 SELECT jsonb_agg(
-													  jsonb_build_object(
-														'id',   sim->>'id',
-														'box',  sim->'box',
-														'name', n.name
-													  )
+													  jsonb_build_object('id', sim_id, 'name', n.name)
 													)
-											 FROM jsonb_array_elements(
+											 FROM jsonb_array_elements_text(
 													COALESCE(c->'similar', '[]'::jsonb)
-												  ) AS sim
-											 LEFT JOIN aa_nicknames n ON n.id::text = sim->>'id'
+												  ) AS sim_id
+											 LEFT JOIN aa_nicknames n ON n.id::text = sim_id
 										   ),
 										   '[]'::jsonb
 										 )
