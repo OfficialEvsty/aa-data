@@ -9,6 +9,7 @@ import (
 type Participant struct {
 	NicknameID uuid.UUID `json:"id"`
 	Name       string    `json:"name"`
+	Box        [4]Point  `json:"box"`
 }
 
 // NamedConflict similar nicknames under occurrence with box area
@@ -28,7 +29,7 @@ func (s *NamedConflict) Scan(src interface{}) error {
 // NicknamesWithConflicts result of nicknames recognition mapped with names
 type NicknamesWithConflicts struct {
 	Conflicts    []NamedConflict `json:"conflicts"`
-	Participants []Participant   `json:"nickname_ids"`
+	Participants []Participant   `json:"nicknames"`
 }
 
 func (s *NicknamesWithConflicts) Scan(src interface{}) error {
