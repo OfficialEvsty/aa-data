@@ -35,8 +35,8 @@ func (s *Participant) Scan(src interface{}) error {
 
 // NamedConflict similar nicknames under occurrence with box area
 type NamedConflict struct {
-	Similar []*ParticipantConflict `json:"similar"`
-	Box     [4]Point               `json:"box"`
+	Similar []ParticipantConflict `json:"similar"`
+	Box     [4]Point              `json:"box"`
 }
 
 func (s *NamedConflict) Scan(src interface{}) error {
