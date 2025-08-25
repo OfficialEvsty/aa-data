@@ -435,42 +435,105 @@ func TestFinishedPublishQuery(t *testing.T) {
 		t.Fatal(err)
 	}
 	finishPubRepo := junction_repos2.NewFinishedPublishRepository(testDB)
+	var testBox [4]serializable.Point
+	testBox = [4]serializable.Point{
+		serializable.Point{
+			X: 23,
+			Y: 32,
+		},
+		serializable.Point{
+			X: 23,
+			Y: 32,
+		},
+		serializable.Point{
+			X: 23,
+			Y: 32,
+		},
+		serializable.Point{
+			X: 23,
+			Y: 32,
+		},
+	}
 	e, err := finishPubRepo.Add(ctx, domain.FinishedPublish{
 		PublishID: testPublish.ID,
 		Result: serializable.NicknameResultWithConflicts{
 			Conflicts: []serializable.Conflict{
 				serializable.Conflict{
 					Similar: []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
-					Box: [4]serializable.Point{
-						serializable.Point{
-							X: 23,
-							Y: 32,
-						},
-						serializable.Point{
-							X: 23,
-							Y: 32,
-						},
-						serializable.Point{
-							X: 23,
-							Y: 32,
-						},
-						serializable.Point{
-							X: 23,
-							Y: 32,
-						},
-					},
+					Box:     testBox,
 				},
 			},
-			NicknameIDs: []uuid.UUID{uuid.New(), uuid.New()},
-		},
-	})
+			Nicknames: []serializable.Nickname{
+				{uuid.New(), testBox},
+				{uuid.New(), testBox},
+			},
+		}})
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(t, e.PublishID, testPublish.ID)
 	assert.Equal(t, len(e.Result.Conflicts), 1)
 	assert.Equal(t, len(e.Result.Conflicts[0].Similar), 3)
-	assert.Equal(t, len(e.Result.NicknameIDs), 2)
+	assert.Equal(t, len(e.Result.Nicknames), 2)
+}
+
+func TestOcrDataSaving(t *testing.T) {
+	ctx := context.Background()
+	log.Println("starts add ocr data saving ...")
+	tx, err := testDB.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	publishRepo := repos.NewPublishRepository(testDB)
+	testPublish := domain.PublishedScreenshot{
+		ID: uuid.New(),
+		S3Data: serializable.S3Screenshot{
+			Key:    "s3key",
+			Bucket: "s3Bucket",
+			S3Name: "selectel",
+		},
+	}
+	err = publishRepo.WithTx(tx).Add(ctx, testPublish)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ocrRawDataRepository := repos.NewRawOcrRepository(testDB)
+	var testBox [4]serializable.Point
+	testBox = [4]serializable.Point{
+		serializable.Point{
+			X: 23,
+			Y: 32,
+		},
+		serializable.Point{
+			X: 23,
+			Y: 32,
+		},
+		serializable.Point{
+			X: 23,
+			Y: 32,
+		},
+		serializable.Point{
+			X: 23,
+			Y: 32,
+		},
+	}
+	raw := serializable.OCRData{
+		ID: testPublish.ID,
+		Boxes: []serializable.Occurrence{
+			{
+				Text: "besti",
+				Box:  testBox,
+			},
+			{
+				Text: "mesti",
+				Box:  testBox,
+			},
+		},
+	}
+	err = ocrRawDataRepository.WithTx(tx).Add(ctx, testPublish.ID, raw)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestEventBossDropPulling(t *testing.T) {
