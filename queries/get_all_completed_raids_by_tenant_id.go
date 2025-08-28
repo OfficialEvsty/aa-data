@@ -40,7 +40,7 @@ func (q *GetAllCompletedRaidsByTenantID) Handle(ctx context.Context, tenantID uu
  			  JOIN tenant_publishes AS tp ON r.publish_id = tp.publish_id
  			  JOIN attendance AS a ON r.id = a.raid_id
  			  JOIN lunark_raids AS lr ON r.id = lr.raid_id
- 			  WHERE tp.tenant_id = $1 AND r.status = 'resolved' AND lr.lunark_id = $2
+ 			  WHERE tp.tenant_id = $1 AND r.status = 'resolved' AND lr.lunark_id = $2 AND r.is_deleted = FALSE
  			  GROUP BY r.id, tp.user_id, r.raid_at, r.attendance`
 
 	rows, err := q.exec.QueryContext(ctx, getRaidsAndParticipantCountQuery, tenantID, lunarkID)
