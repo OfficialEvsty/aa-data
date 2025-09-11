@@ -1195,3 +1195,176 @@ func TestAddOrUpdateRaidDataCommand(t *testing.T) {
 	}
 	assert.Equal(t, len(items), 2)
 }
+
+func TestChainRepository(t *testing.T) {
+	ctx := context.Background()
+	log.Println("starts add chain command...")
+	tx, err := testDB.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx = db.WithTxInContext(ctx, tx)
+	defer tx.Rollback()
+	chainRepository := repos.NewChainRepository(testDB)
+	nUUID, err := uuid.Parse("b6d3afdf-1a9d-4bc4-a8b6-d9377889c25b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	nickChain := domain.NicknameChain{
+		ChainID:       uuid.New(),
+		ParentChainID: nil,
+		NicknameID:    nUUID,
+	}
+	err = chainRepository.WithTx(tx).Add(ctx, nickChain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("step 1 finished")
+	receivedChain, err := chainRepository.WithTx(tx).GetChain(ctx, nUUID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("step 2 finished")
+	assert.Equal(t, len(receivedChain), 1)
+	assert.Equal(t, receivedChain[0].NicknameID, nickChain.NicknameID)
+	require.Nil(t, receivedChain[0].ParentChainID)
+	nickChain2 := domain.NicknameChain{
+		ChainID:       uuid.New(),
+		ParentChainID: nil,
+		NicknameID:    nUUID,
+	}
+	err = chainRepository.WithTx(tx).Add(ctx, nickChain2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("step 3 finished")
+	receivedChain, err = chainRepository.WithTx(tx).GetChain(ctx, nUUID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("step 4 finished")
+	assert.Equal(t, len(receivedChain), 2)
+	attachCommand := commands.AttachNewChainByOldChainIDCommand{
+		ParentChainID: nickChain.ChainID,
+		ChildChainID:  nickChain2.ChainID,
+	}
+	attachManager := commands.NewAttachManager(testDB)
+	err = attachManager.AttachChain(ctx, &attachCommand)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("step 5 finished")
+	chainID := receivedChain[0].ChainID
+	chains, err := chainRepository.WithTx(tx).GetNicknameChains(ctx, chainID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(chains), 2)
+	assert.Equal(t, chains[0].NicknameID, chains[1].NicknameID)
+	assert.Equal(t, chains[0].Active, !chains[1].Active)
+	detachCommand := &commands.DetachChainFromParentCommand{
+		ParentChainID: nickChain.ChainID,
+	}
+	err = attachManager.DetachChain(ctx, detachCommand)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("step 6 finished")
+	chains, err = chainRepository.WithTx(tx).GetNicknameChains(ctx, chainID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(chains), 1)
+	require.Nil(t, chains[0].ParentChainID)
+
+	receivedChains, err := chainRepository.WithTx(tx).GetChain(ctx, nickChain.NicknameID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, len(receivedChains), 2)
+	assert.Equal(t, receivedChains[0].Active, receivedChains[1].Active)
+	require.Nil(t, receivedChains[1].ParentChainID)
+
+	nicknameRepo := repos.NewNicknameRepo(testDB)
+	serverID, err := uuid.Parse("1e0c8de5-9fc0-4538-b433-b9eae8e3a776")
+	if err != nil {
+		t.Fatal(err)
+	}
+	testNickname1 := domain.AANickname{
+		ID:       uuid.New(),
+		ServerID: serverID,
+		Name:     "mikasa",
+	}
+	testNickname2 := domain.AANickname{
+		ID:       uuid.New(),
+		ServerID: serverID,
+		Name:     "eren",
+	}
+	n1, err := nicknameRepo.WithTx(tx).Create(ctx, testNickname1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	n2, err := nicknameRepo.WithTx(tx).Create(ctx, testNickname2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ch1 := domain.NicknameChain{
+		ChainID:       uuid.New(),
+		ParentChainID: nil,
+		NicknameID:    n1.ID,
+	}
+	ch2 := domain.NicknameChain{
+		ChainID:       uuid.New(),
+		ParentChainID: nil,
+		NicknameID:    n2.ID,
+	}
+	err = chainRepository.WithTx(tx).Add(ctx, ch1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = chainRepository.WithTx(tx).Add(ctx, ch2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	attachCommand2 := commands.AttachNewChainByOldChainIDCommand{
+		ParentChainID: nickChain.ChainID,
+		ChildChainID:  ch1.ChainID,
+	}
+	err = attachManager.AttachChain(ctx, &attachCommand2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	attachCommand3 := commands.AttachNewChainByOldChainIDCommand{
+		ParentChainID: ch1.ChainID,
+		ChildChainID:  ch2.ChainID,
+	}
+	err = attachManager.AttachChain(ctx, &attachCommand3)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activeChain, err := chainRepository.WithTx(tx).GetActiveChainID(ctx, ch1.ChainID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, activeChain.ChainID, ch2.ChainID)
+	assert.Equal(t, activeChain.Active, true)
+	assert.Equal(t, activeChain.NicknameID, n2.ID)
+
+	rootChain, err := chainRepository.WithTx(tx).GetRootChain(ctx, chainID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	require.Nil(t, rootChain.ParentChainID)
+	assert.Equal(t, rootChain.Active, false)
+
+	t.Log("step 7 getting full chain history by relative chain ID...")
+	getHistoryQuery := queries.NewGetNicknamesHistoryByRelativeChainIdQuery(testDB)
+	history, err := getHistoryQuery.WithTx(tx).Handle(ctx, ch1.ChainID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, history.Size(), 3)
+	head, _ := history.Peek()
+	assert.Equal(t, head.ChainID, ch2.ChainID)
+}

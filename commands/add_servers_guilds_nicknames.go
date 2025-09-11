@@ -10,6 +10,7 @@ import (
 	"github.com/OfficialEvsty/aa-data/domain/usecase"
 	repos2 "github.com/OfficialEvsty/aa-data/repos/interface"
 	junction_repos "github.com/OfficialEvsty/aa-data/repos/interface/junction"
+	"github.com/google/uuid"
 )
 
 // AddServersGuildsNicknamesCommand add all related entities together
@@ -23,6 +24,7 @@ type ServerImporter struct {
 	guildRepo  repos2.IGuildRepository
 	nickRepo   repos2.INicknameRepository
 	linkRepo   junction_repos.IGuildNicknameRepository
+	chainsRepo repos2.IChainRepository
 }
 
 func NewServerImporter(
@@ -31,6 +33,7 @@ func NewServerImporter(
 	guildRepo repos2.IGuildRepository,
 	nickRepo repos2.INicknameRepository,
 	linkRepo junction_repos.IGuildNicknameRepository,
+	chainsRepo repos2.IChainRepository,
 ) *ServerImporter {
 	return &ServerImporter{
 		tx:         tx,
@@ -38,6 +41,7 @@ func NewServerImporter(
 		guildRepo:  guildRepo,
 		nickRepo:   nickRepo,
 		linkRepo:   linkRepo,
+		chainsRepo: chainsRepo,
 	}
 }
 
@@ -73,6 +77,31 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 					if err != nil {
 						return fmt.Errorf("error adding nickname: %v", err)
 					}
+					isNewChainNeed := false
+					availableChains, err := si.chainsRepo.GetChain(ctx, n.Nickname.ID)
+					if err == nil && len(availableChains) > 0 {
+						_, err := si.chainsRepo.GetActiveChainID(ctx, availableChains[0].ChainID)
+						if err != nil && !errors.Is(err, sql.ErrNoRows) {
+							return fmt.Errorf("error getting chains: %v", err)
+						}
+						isNewChainNeed = true
+					}
+					if err != nil && !errors.Is(err, sql.ErrNoRows) {
+						return fmt.Errorf("error getting chains: %v", err)
+					}
+					if !isNewChainNeed {
+						return nil
+					}
+					newChain := domain.NicknameChain{
+						ChainID:       uuid.New(),
+						ParentChainID: nil,
+						NicknameID:    n.Nickname.ID,
+					}
+					err = si.chainsRepo.Add(ctx, newChain)
+					if err != nil {
+						return fmt.Errorf("error adding new chain by nickname id - %v: %w", n.Nickname.ID, err)
+					}
+					return nil
 				}
 			}
 		}
