@@ -11,6 +11,7 @@ import (
 	repos2 "github.com/OfficialEvsty/aa-data/repos/interface"
 	junction_repos "github.com/OfficialEvsty/aa-data/repos/interface/junction"
 	"github.com/google/uuid"
+	"log"
 )
 
 // AddServersGuildsNicknamesCommand add all related entities together
@@ -78,9 +79,9 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 						return fmt.Errorf("error adding nickname: %v", err)
 					}
 					isNewChainNeed := false
-					availableChains, err := si.chainsRepo.GetChain(ctx, n.Nickname.ID)
+					availableChains, err := si.chainsRepo.WithTx(tx).GetChain(ctx, n.Nickname.ID)
 					if err == nil && len(availableChains) > 0 {
-						_, err := si.chainsRepo.GetActiveChainID(ctx, availableChains[0].ChainID)
+						_, err := si.chainsRepo.WithTx(tx).GetActiveChainID(ctx, availableChains[0].ChainID)
 						if err != nil && !errors.Is(err, sql.ErrNoRows) {
 							return fmt.Errorf("error getting chains: %v", err)
 						}
@@ -97,10 +98,11 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 						ParentChainID: nil,
 						NicknameID:    n.Nickname.ID,
 					}
-					err = si.chainsRepo.Add(ctx, newChain)
+					err = si.chainsRepo.WithTx(tx).Add(ctx, newChain)
 					if err != nil {
 						return fmt.Errorf("error adding new chain by nickname id - %v: %w", n.Nickname.ID, err)
 					}
+					log.Println(fmt.Sprintf("Added new chained Nickname with ID: %v for nickname: %v", newChain.ChainID, n.Nickname.Name))
 					return nil
 				}
 			}
