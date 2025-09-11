@@ -89,6 +89,8 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 					}
 					if err != nil && !errors.Is(err, sql.ErrNoRows) {
 						return fmt.Errorf("error getting chains: %v", err)
+					} else {
+						isNewChainNeed = true
 					}
 					if !isNewChainNeed {
 						continue
