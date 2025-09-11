@@ -91,7 +91,7 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 						return fmt.Errorf("error getting chains: %v", err)
 					}
 					if !isNewChainNeed {
-						return nil
+						continue
 					}
 					newChain := domain.NicknameChain{
 						ChainID:       uuid.New(),
@@ -103,7 +103,6 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 						return fmt.Errorf("error adding new chain by nickname id - %v: %w", n.Nickname.ID, err)
 					}
 					log.Println(fmt.Sprintf("Added new chained Nickname with ID: %v for nickname: %v", newChain.ChainID, n.Nickname.Name))
-					return nil
 				}
 			}
 		}
