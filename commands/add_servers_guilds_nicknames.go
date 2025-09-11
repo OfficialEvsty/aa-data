@@ -79,7 +79,7 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 						return fmt.Errorf("error adding nickname: %v", err)
 					}
 					isNewChainNeed := false
-					availableChains, err := si.chainsRepo.WithTx(tx).GetChain(ctx, n.Nickname.ID)
+					availableChains, err := si.chainsRepo.WithTx(tx).GetChain(ctx, nickname.ID)
 					if err == nil && len(availableChains) > 0 {
 						_, err := si.chainsRepo.WithTx(tx).GetActiveChainID(ctx, availableChains[0].ChainID)
 						if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -98,13 +98,13 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 					newChain := domain.NicknameChain{
 						ChainID:       uuid.New(),
 						ParentChainID: nil,
-						NicknameID:    n.Nickname.ID,
+						NicknameID:    nickname.ID,
 					}
 					err = si.chainsRepo.WithTx(tx).Add(ctx, newChain)
 					if err != nil {
-						return fmt.Errorf("error adding new chain by nickname id - %v: %w", n.Nickname.ID, err)
+						return fmt.Errorf("error adding new chain by nickname id - %v: %w", nickname.ID, err)
 					}
-					log.Println(fmt.Sprintf("Added new chained Nickname with ID: %v for nickname: %v", newChain.ChainID, n.Nickname.Name))
+					log.Println(fmt.Sprintf("Added new chained Nickname with ID: %v for nickname: %v", newChain.ChainID, nickname.Name))
 				}
 			}
 		}
