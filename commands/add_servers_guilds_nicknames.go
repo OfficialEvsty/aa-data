@@ -78,21 +78,24 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 					if err != nil {
 						return fmt.Errorf("error adding nickname: %v", err)
 					}
-					isNewChainNeed := false
+					isNewChainNeed := true // по умолчанию считаем, что нужно создать
+
 					availableChains, err := si.chainsRepo.WithTx(tx).GetChain(ctx, nickname.ID)
-					if err == nil && len(availableChains) > 0 {
-						_, err := si.chainsRepo.WithTx(tx).GetActiveChainID(ctx, availableChains[0].ChainID)
-						if err != nil && !errors.Is(err, sql.ErrNoRows) {
-							return fmt.Errorf("error getting chains: %v", err)
-						} else {
-							isNewChainNeed = true
-						}
-					}
 					if err != nil && !errors.Is(err, sql.ErrNoRows) {
 						return fmt.Errorf("error getting chains: %v", err)
-					} else {
-						isNewChainNeed = true
 					}
+
+					// если есть хотя бы одна цепочка
+					if len(availableChains) > 0 {
+						_, err := si.chainsRepo.WithTx(tx).GetActiveChainID(ctx, availableChains[0].ChainID)
+						if err == nil {
+							// активная цепочка найдена → новую НЕ создаём
+							isNewChainNeed = false
+						} else if !errors.Is(err, sql.ErrNoRows) {
+							return fmt.Errorf("error getting active chain: %v", err)
+						}
+					}
+
 					if !isNewChainNeed {
 						continue
 					}
