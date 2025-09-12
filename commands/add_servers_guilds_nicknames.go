@@ -84,8 +84,9 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 						_, err := si.chainsRepo.WithTx(tx).GetActiveChainID(ctx, availableChains[0].ChainID)
 						if err != nil && !errors.Is(err, sql.ErrNoRows) {
 							return fmt.Errorf("error getting chains: %v", err)
+						} else {
+							isNewChainNeed = true
 						}
-						isNewChainNeed = true
 					}
 					if err != nil && !errors.Is(err, sql.ErrNoRows) {
 						return fmt.Errorf("error getting chains: %v", err)
