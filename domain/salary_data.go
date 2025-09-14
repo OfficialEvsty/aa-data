@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/OfficialEvsty/aa-data/domain/serializable"
 	"github.com/google/uuid"
 	"time"
 )
@@ -12,11 +13,12 @@ type ExcludedParticipant struct {
 }
 
 type Salary struct {
-	ID            uuid.UUID `json:"id"`
-	Fond          int       `json:"fond"`
-	MinAttendance int       `json:"min_attendance"`
-	Tax           int       `json:"tax"`
-	CreatedAt     time.Time `json:"created_at"`
+	ID            uuid.UUID                 `json:"id"`
+	Fond          int                       `json:"fond"`
+	MinAttendance int                       `json:"min_attendance"`
+	Tax           int                       `json:"tax"`
+	CreatedAt     time.Time                 `json:"created_at"`
+	Status        serializable.SalaryStatus `json:"status"`
 }
 
 type Payment struct {

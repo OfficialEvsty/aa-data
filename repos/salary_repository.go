@@ -33,14 +33,15 @@ func (r *SalaryRepository) Update(ctx context.Context, salary domain.Salary) err
               SET 
                   fond = $2,
 				  min_attendance = $3, 
-				  tax = $4
+				  tax = $4,
+            	  status = $5
 			  WHERE id = $1`
-	_, err := r.exec.ExecContext(ctx, query, salary.ID, salary.Fond, salary.MinAttendance, salary.Tax)
+	_, err := r.exec.ExecContext(ctx, query, salary.ID, salary.Fond, salary.MinAttendance, salary.Tax, salary.Status)
 	return err
 }
 
 func (r *SalaryRepository) GetByID(ctx context.Context, salaryID uuid.UUID) (*domain.Salary, error) {
-	query := `SELECT id, fond, min_attendance, tax FROM salaries WHERE id = $1`
+	query := `SELECT id, fond, min_attendance, tax, status FROM salaries WHERE id = $1`
 	row := r.exec.QueryRowContext(ctx, query, salaryID)
 	var salary domain.Salary
 	err := row.Scan(
@@ -48,6 +49,7 @@ func (r *SalaryRepository) GetByID(ctx context.Context, salaryID uuid.UUID) (*do
 		&salary.Fond,
 		&salary.MinAttendance,
 		&salary.Tax,
+		&salary.Status,
 	)
 	return &salary, err
 }
