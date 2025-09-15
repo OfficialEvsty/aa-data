@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
+	"github.com/OfficialEvsty/aa-data/domain/serializable"
 	"github.com/google/uuid"
 	"time"
 )
@@ -17,12 +18,59 @@ type OpenedLunark struct {
 	Opened    bool       `json:"opened"`
 }
 
+type LunarkPayout struct {
+	LunarkID  uuid.UUID                  `json:"lunark_id"`
+	Name      string                     `json:"name"`
+	StartDate time.Time                  `json:"start_date"`
+	EndDate   *time.Time                 `json:"end_date"`
+	Opened    bool                       `json:"opened"`
+	PayoutID  *uuid.UUID                 `json:"payout_id"`
+	Status    *serializable.SalaryStatus `json:"status"`
+}
+
 type GetOpenedLunarkByTenant struct {
 	exec db.ISqlExecutor
 }
 
 func NewGetOpenedLunarkByTenant(exec db.ISqlExecutor) GetOpenedLunarkByTenant {
 	return GetOpenedLunarkByTenant{exec: exec}
+}
+
+func (q *GetOpenedLunarkByTenant) GetLunarkPayoutList(ctx context.Context, tenantID uuid.UUID) ([]*LunarkPayout, error) {
+	var result []*LunarkPayout
+	query := `SELECT l.id, l.name, l.start_date, l.end_date, l.opened, s.id, s.status
+              FROM tenant_lunark tl
+              JOIN lunark l ON l.id = tl.lunark_id
+              LEFT JOIN lunark_salaries ls ON ls.lunark_id = l.id
+              LEFT JOIN salaries s ON s.id = ls.salary_id
+              WHERE tl.tenant_id = $1
+              ORDER BY l.start_date DESC`
+	rows, err := q.exec.QueryContext(ctx, query, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var l LunarkPayout
+		err = rows.Scan(
+			&l.LunarkID,
+			&l.Name,
+			&l.StartDate,
+			&l.EndDate,
+			&l.Opened,
+			&l.PayoutID,
+			&l.Status,
+		)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, &l)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (q *GetOpenedLunarkByTenant) Handle(ctx context.Context, tenantID uuid.UUID) (*OpenedLunark, error) {

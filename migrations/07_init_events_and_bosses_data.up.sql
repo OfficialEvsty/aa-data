@@ -1,4 +1,4 @@
--- PRE-Initialize bosses ids
+    -- PRE-Initialize bosses ids
 -- Гленн
 INSERT INTO aa_bosses (id, name, drop, img_url) VALUES (13279, '', '[]'::jsonb, '') ON CONFLICT (id) DO NOTHING;
 -- Лорея
