@@ -38,7 +38,7 @@ func NewGetOpenedLunarkByTenant(exec db.ISqlExecutor) GetOpenedLunarkByTenant {
 
 func (q *GetOpenedLunarkByTenant) GetLunarkPayoutList(ctx context.Context, tenantID uuid.UUID) ([]*LunarkPayout, error) {
 	var result []*LunarkPayout
-	query := `SELECT l.id, l.name, l.start_date, l.end_date, l.opened, s.id, s.status
+	query := `SELECT l.id, l.name, l.start_date, l.end_date, tl.opened, s.id, s.status
               FROM tenant_lunark tl
               JOIN lunark l ON l.id = tl.lunark_id
               LEFT JOIN lunark_salaries ls ON ls.lunark_id = l.id
