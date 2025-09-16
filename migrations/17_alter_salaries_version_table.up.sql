@@ -1,0 +1,8 @@
+ALTER TABLE salaries ADD COLUMN version BIGINT NOT NULL DEFAULT 1;
+ALTER TABLE salaries ADD COLUMN is_deleted BOOLEAN NOT NULL DEFAULT FALSE;
+
+CREATE TABLE IF NOT EXISTS tenant_chains (
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    chain_id UUID REFERENCES chains(id) ON DELETE CASCADE,
+    UNIQUE(tenant_id, chain_id)
+)

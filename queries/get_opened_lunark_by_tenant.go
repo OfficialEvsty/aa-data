@@ -42,7 +42,7 @@ func (q *GetOpenedLunarkByTenant) GetLunarkPayoutList(ctx context.Context, tenan
               FROM tenant_lunark tl
               JOIN lunark l ON l.id = tl.lunark_id
               LEFT JOIN lunark_salaries ls ON ls.lunark_id = l.id
-              LEFT JOIN salaries s ON s.id = ls.salary_id
+              LEFT JOIN salaries s ON s.id = ls.salary_id AND s.is_deleted = FALSE
               WHERE tl.tenant_id = $1
               ORDER BY l.start_date DESC`
 	rows, err := q.exec.QueryContext(ctx, query, tenantID)

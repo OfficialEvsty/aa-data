@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+type TenantChain struct {
+	TenantID uuid.UUID `json:"tenant_id"`
+	ChainID  uuid.UUID `json:"chain_id"`
+}
+
 type NicknameChain struct {
 	ChainID       uuid.UUID  `json:"chain_id"`
 	ParentChainID *uuid.UUID `json:"parent_chain_id"`

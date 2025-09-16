@@ -19,6 +19,7 @@ type Salary struct {
 	Tax           int                       `json:"tax"`
 	CreatedAt     time.Time                 `json:"created_at"`
 	Status        serializable.SalaryStatus `json:"status"`
+	Version       int                       `json:"version"`
 }
 
 type Payment struct {
