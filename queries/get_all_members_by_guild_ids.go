@@ -2,6 +2,7 @@ package queries
 
 import (
 	"context"
+	"database/sql"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain/usecase"
 	"github.com/google/uuid"
@@ -41,4 +42,8 @@ func (q *GetAllMembersByGuildIDs) Handle(ctx context.Context, guildIDs []uuid.UU
 		members = append(members, &member)
 	}
 	return members, nil
+}
+
+func (q *GetAllMembersByGuildIDs) WithTx(tx *sql.Tx) *GetAllMembersByGuildIDs {
+	return &GetAllMembersByGuildIDs{tx}
 }

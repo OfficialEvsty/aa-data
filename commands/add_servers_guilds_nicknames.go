@@ -10,8 +10,6 @@ import (
 	"github.com/OfficialEvsty/aa-data/domain/usecase"
 	repos2 "github.com/OfficialEvsty/aa-data/repos/interface"
 	junction_repos "github.com/OfficialEvsty/aa-data/repos/interface/junction"
-	"github.com/google/uuid"
-	"log"
 )
 
 // AddServersGuildsNicknamesCommand add all related entities together
@@ -25,7 +23,7 @@ type ServerImporter struct {
 	guildRepo  repos2.IGuildRepository
 	nickRepo   repos2.INicknameRepository
 	linkRepo   junction_repos.IGuildNicknameRepository
-	chainsRepo repos2.IChainRepository
+	//chainsRepo repos2.IChainRepository
 }
 
 func NewServerImporter(
@@ -34,7 +32,7 @@ func NewServerImporter(
 	guildRepo repos2.IGuildRepository,
 	nickRepo repos2.INicknameRepository,
 	linkRepo junction_repos.IGuildNicknameRepository,
-	chainsRepo repos2.IChainRepository,
+	// chainsRepo repos2.IChainRepository,
 ) *ServerImporter {
 	return &ServerImporter{
 		tx:         tx,
@@ -42,7 +40,7 @@ func NewServerImporter(
 		guildRepo:  guildRepo,
 		nickRepo:   nickRepo,
 		linkRepo:   linkRepo,
-		chainsRepo: chainsRepo,
+		//chainsRepo: chainsRepo,
 	}
 }
 
@@ -78,37 +76,37 @@ func (si *ServerImporter) Handle(ctx context.Context, cmd AddServersGuildsNickna
 					if err != nil {
 						return fmt.Errorf("error adding nickname: %v", err)
 					}
-					isNewChainNeed := true // по умолчанию считаем, что нужно создать
-
-					availableChains, err := si.chainsRepo.WithTx(tx).GetChain(ctx, nickname.ID)
-					if err != nil && !errors.Is(err, sql.ErrNoRows) {
-						return fmt.Errorf("error getting chains: %v", err)
-					}
-
-					// если есть хотя бы одна цепочка
-					if len(availableChains) > 0 {
-						_, err := si.chainsRepo.WithTx(tx).GetActiveChainID(ctx, availableChains[0].ChainID)
-						if err == nil {
-							// активная цепочка найдена → новую НЕ создаём
-							isNewChainNeed = false
-						} else if !errors.Is(err, sql.ErrNoRows) {
-							return fmt.Errorf("error getting active chain: %v", err)
-						}
-					}
-
-					if !isNewChainNeed {
-						continue
-					}
-					newChain := domain.NicknameChain{
-						ChainID:       uuid.New(),
-						ParentChainID: nil,
-						NicknameID:    nickname.ID,
-					}
-					err = si.chainsRepo.WithTx(tx).Add(ctx, newChain)
-					if err != nil {
-						return fmt.Errorf("error adding new chain by nickname id - %v: %w", nickname.ID, err)
-					}
-					log.Println(fmt.Sprintf("Added new chained Nickname with ID: %v for nickname: %v", newChain.ChainID, nickname.Name))
+					//isNewChainNeed := true // по умолчанию считаем, что нужно создать
+					//
+					//availableChains, err := si.chainsRepo.WithTx(tx).GetChain(ctx, nickname.ID)
+					//if err != nil && !errors.Is(err, sql.ErrNoRows) {
+					//	return fmt.Errorf("error getting chains: %v", err)
+					//}
+					//
+					//// если есть хотя бы одна цепочка
+					//if len(availableChains) > 0 {
+					//	_, err := si.chainsRepo.WithTx(tx).GetActiveChainID(ctx, availableChains[0].ChainID)
+					//	if err == nil {
+					//		// активная цепочка найдена → новую НЕ создаём
+					//		isNewChainNeed = false
+					//	} else if !errors.Is(err, sql.ErrNoRows) {
+					//		return fmt.Errorf("error getting active chain: %v", err)
+					//	}
+					//}
+					//
+					//if !isNewChainNeed {
+					//	continue
+					//}
+					//newChain := domain.NicknameChain{
+					//	ChainID:       uuid.New(),
+					//	ParentChainID: nil,
+					//	NicknameID:    nickname.ID,
+					//}
+					//err = si.chainsRepo.WithTx(tx).Add(ctx, newChain)
+					//if err != nil {
+					//	return fmt.Errorf("error adding new chain by nickname id - %v: %w", nickname.ID, err)
+					//}
+					//log.Println(fmt.Sprintf("Added new chained Nickname with ID: %v for nickname: %v", newChain.ChainID, nickname.Name))
 				}
 			}
 		}

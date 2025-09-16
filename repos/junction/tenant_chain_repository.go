@@ -2,8 +2,10 @@ package junction_repos
 
 import (
 	"context"
+	"database/sql"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
+	junction_repos "github.com/OfficialEvsty/aa-data/repos/interface/junction"
 	"github.com/google/uuid"
 )
 
@@ -21,7 +23,7 @@ func (r *TenantChainRepository) Add(ctx context.Context, tc domain.TenantChain) 
 	return err
 }
 
-func (r *TenantChainRepository) GetAllByTenant(ctx context.Context, tenantID string) ([]*domain.TenantChain, error) {
+func (r *TenantChainRepository) GetAllByTenant(ctx context.Context, tenantID uuid.UUID) ([]*domain.TenantChain, error) {
 	var result []*domain.TenantChain
 	query := `SELECT tenant_id, chain_id FROM tenant_chains WHERE tenant_id = $1`
 	rows, err := r.exec.QueryContext(ctx, query, tenantID)
@@ -48,4 +50,8 @@ func (r *TenantChainRepository) Remove(ctx context.Context, chainID uuid.UUID) e
 	query := `DELETE FROM tenant_chains WHERE chain_id = $1`
 	_, err := r.exec.ExecContext(ctx, query, chainID)
 	return err
+}
+
+func (r *TenantChainRepository) WithTx(tx *sql.Tx) junction_repos.ITenantChainRepository {
+	return &TenantChainRepository{tx}
 }
