@@ -1,7 +1,6 @@
 package queries
 
 import (
-	"context"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/google/uuid"
 )
@@ -22,8 +21,8 @@ func NewGetChainedParticipantsByTenantIDQuery(exec db.ISqlExecutor) *GetChainedP
 	return &GetChainedParticipantsByTenantIDQuery{exec: exec}
 }
 
-func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, chainIDs []uuid.UUID) ([]*ChainedNickname, error) {
-	query := `
-				SELECT 
-			 `
-}
+//func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, chainIDs []uuid.UUID) ([]*ChainedNickname, error) {
+//	query := `
+//				SELECT
+//			 `
+//}
