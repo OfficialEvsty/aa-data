@@ -14,5 +14,6 @@ type ITenantRepository interface {
 	GetByID(context.Context, uuid.UUID) (*domain.Tenant, error)
 	GetByOwnerID(context.Context, uuid.UUID) (*domain.Tenant, error)
 	GetOwnerID(context.Context, uuid.UUID) (uuid.UUID, error)
+	All(context.Context) ([]*domain.Tenant, error)
 	WithTx(*sql.Tx) ITenantRepository
 }

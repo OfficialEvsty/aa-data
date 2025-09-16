@@ -88,6 +88,32 @@ func (r *TenantRepository) GetOwnerID(ctx context.Context, tenantID uuid.UUID) (
 	}
 	return ownerID, nil
 }
+
+func (r *TenantRepository) All(ctx context.Context) ([]*domain.Tenant, error) {
+	var tenants []*domain.Tenant = make([]*domain.Tenant, 0)
+	query := `SELECT id, name, created_at, owner_id FROM tenants;`
+	rows, err := r.exec.QueryContext(ctx, query)
+	if err != nil {
+		return tenants, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var tenant domain.Tenant
+		err = rows.Scan(
+			&tenant.ID,
+			&tenant.Name,
+			&tenant.CreatedAt,
+			&tenant.OwnerID,
+		)
+		tenants = append(tenants, &tenant)
+	}
+	err = rows.Err()
+	if err != nil {
+		return tenants, err
+	}
+	return tenants, nil
+}
+
 func (r *TenantRepository) WithTx(tx *sql.Tx) repos.ITenantRepository {
 	return &TenantRepository{tx}
 }
