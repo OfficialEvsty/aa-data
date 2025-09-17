@@ -109,20 +109,19 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, acti
 									FROM chains c
 									INNER JOIN chain_tree ct ON c.parent_chain_id = ct.chain_id
 								)
-								SELECT DISTINCT ON (root_chain_id)
-									nickname_id,
-									active,
+									SELECT DISTINCT ON (ct.root_chain_id)
+									ct.nickname_id,
+									ct.active,
 									n.name,
 									g.name,
 									g.id,
-									root_chain_id
-								FROM chain_tree
-								JOIN aa_nicknames n ON n.id = nickname_id
+									ct.root_chain_id
+								FROM chain_tree ct
+								JOIN aa_nicknames n ON n.id = ct.nickname_id
 								JOIN aa_guild_nicknames gn ON gn.nickname_id = n.id
 								JOIN aa_guilds g ON g.id = gn.guild_id
-								
-								WHERE active = TRUE
-								ORDER BY root_chain_id DESC;
+								WHERE ct.active = TRUE
+								ORDER BY ct.root_chain_id DESC;
 							`
 	rows, err = q.exec.QueryContext(ctx, getParticipantQuery, pq.Array(activeChainIDs))
 	if err != nil {
