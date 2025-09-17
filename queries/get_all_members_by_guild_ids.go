@@ -6,6 +6,7 @@ import (
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain/usecase"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type GetAllMembersByGuildIDs struct {
@@ -22,7 +23,7 @@ func (q *GetAllMembersByGuildIDs) Handle(ctx context.Context, guildIDs []uuid.UU
               JOIN aa_guilds g ON g.id = gn.guild_id
               JOIN aa_nicknames n ON n.id = gn.nickname_id
               WHERE g.id = ANY($1)`
-	rows, err := q.exec.QueryContext(ctx, query, guildIDs)
+	rows, err := q.exec.QueryContext(ctx, query, pq.Array(guildIDs))
 	if err != nil {
 		return nil, err
 	}
