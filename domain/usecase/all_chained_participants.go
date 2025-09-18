@@ -23,3 +23,6 @@ type ChainedParticipant struct {
 }
 
 type AllChainedParticipants = map[uuid.UUID]*ChainedParticipant
+
+// NicknameID keys refers to root chain id
+type ChainedNicknames = map[uuid.UUID]uuid.UUID
