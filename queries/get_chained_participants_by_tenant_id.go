@@ -131,7 +131,6 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, acti
 	for rows.Next() {
 		var p usecase.ChainedParticipant
 		var active bool
-		var rootID uuid.UUID
 		err = rows.Scan(
 			&p.CurrentNicknameID,
 			&active,
