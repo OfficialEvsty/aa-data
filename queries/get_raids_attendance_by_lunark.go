@@ -21,7 +21,7 @@ func (q *GetRaidsAttendanceByLunarkQuery) Handle(ctx context.Context, lunarkID u
               JOIN raids r ON r.id = lr.raid_id
               JOIN attendance a ON a.raid_id = lr.raid_id
               JOIN aa_nicknames n ON n.id = a.nickname_id
-              WHERE lr.lunark_id = $1`
+              WHERE lr.lunark_id = $1 AND r.is_deleted = FALSE`
 	rows, err := q.exec.QueryContext(ctx, query, lunarkID)
 	if err != nil {
 		return nil, err
