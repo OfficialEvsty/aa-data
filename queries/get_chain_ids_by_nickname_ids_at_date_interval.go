@@ -84,7 +84,8 @@ func (q *GetChainIdsByNicknameIdsAtDateIntervalQuery) Handle(
 	for rows.Next() {
 		var rootChainID uuid.UUID
 		var searchedNicknameID uuid.UUID
-		err = rows.Scan(&rootChainID, &searchedNicknameID)
+		var startDate, endDate time.Time
+		err = rows.Scan(&rootChainID, &searchedNicknameID, &startDate, &endDate)
 		if err != nil {
 			return nil, err
 		}
