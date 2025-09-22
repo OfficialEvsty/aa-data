@@ -6,8 +6,10 @@ import (
 	"fmt"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
+	"github.com/OfficialEvsty/aa-data/domain/usecase"
 	junction_repos2 "github.com/OfficialEvsty/aa-data/repos/interface/junction"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"strings"
 )
 
@@ -67,6 +69,28 @@ func (r *RaidEventRepository) All(ctx context.Context, rID uuid.UUID) ([]*domain
 		raidEvents = append(raidEvents, &raidEvent)
 	}
 	return raidEvents, nil
+}
+
+func (r *RaidEventRepository) AllByRaidIDs(ctx context.Context, raidIDs []uuid.UUID) (usecase.RaidEvents, error) {
+	var result = make(usecase.RaidEvents)
+	query := `SELECT raid_id, event_id
+			  FROM raid_events
+			  WHERE raid_id = ANY($1)`
+	rows, err := r.exec.QueryContext(ctx, query, pq.Array(raidIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var raidID uuid.UUID
+		var eventID int
+		err = rows.Scan(&raidID, &eventID)
+		if err != nil {
+			return nil, err
+		}
+		result[raidID] = append(result[raidID], eventID)
+	}
+	return result, nil
 }
 func (r *RaidEventRepository) WithTx(tx *sql.Tx) junction_repos2.IRaidEventRepository {
 	return &RaidEventRepository{tx}
