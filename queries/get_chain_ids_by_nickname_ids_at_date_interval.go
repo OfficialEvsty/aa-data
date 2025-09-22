@@ -35,7 +35,7 @@ func (q *GetChainIdsByNicknameIdsAtDateIntervalQuery) Handle(
 						c.nickname_id AS searched_nickname_id
 					FROM chains c
 					WHERE c.nickname_id = ANY($1::uuid[])
-					  AND c.chained_at <= $2
+					  AND c.chained_at <= $3
 				
 					UNION ALL
 				
@@ -71,8 +71,8 @@ func (q *GetChainIdsByNicknameIdsAtDateIntervalQuery) Handle(
 				JOIN intervals i ON i.chain_id = rc.chain_id
 				WHERE rc.parent_chain_id IS NULL
 				  AND i.start_date < i.end_date  -- базовое условие валидного интервала
-				  AND i.start_date < $3          -- пересечение с заданным интервалом [$3, $4]
-				  AND i.end_date   > $4;
+				  AND i.start_date < $2          -- пересечение с заданным интервалом [$3, $4]
+				  AND i.end_date   > $3;
 
 			`
 	rows, err := q.exec.QueryContext(ctx, query, pq.Array(nicknameIDs), start, end)
