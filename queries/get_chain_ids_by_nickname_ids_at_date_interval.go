@@ -5,6 +5,7 @@ import (
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain/usecase"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"time"
 )
 
@@ -74,7 +75,7 @@ func (q *GetChainIdsByNicknameIdsAtDateIntervalQuery) Handle(
 				  AND i.end_date   > $4;
 
 			`
-	rows, err := q.exec.QueryContext(ctx, query, nicknameIDs, start, end)
+	rows, err := q.exec.QueryContext(ctx, query, pq.Array(nicknameIDs), start, end)
 	if err != nil {
 		return nil, err
 	}
