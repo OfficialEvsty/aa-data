@@ -72,7 +72,7 @@ func (q *GetChainIdsByNicknameIdsAtDateIntervalQuery) Handle(
 				WHERE rc.parent_chain_id IS NULL
 				  AND i.start_date < i.end_date  -- базовое условие валидного интервала
 				  AND i.start_date < $3          -- пересечение с заданным интервалом [$3, $4]
-				  AND i.end_date   > $2;
+				  AND i.end_date   > $2;	
 
 			`
 	rows, err := q.exec.QueryContext(ctx, query, pq.Array(nicknameIDs), start, end)

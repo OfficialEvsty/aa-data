@@ -14,10 +14,11 @@ type ExcludedParticipant struct {
 
 type Salary struct {
 	ID            uuid.UUID                 `json:"id"`
-	Fond          int                       `json:"fond"`
+	Fond          int64                     `json:"fond"`
 	MinAttendance int                       `json:"min_attendance"`
 	Tax           int                       `json:"tax"`
 	CreatedAt     time.Time                 `json:"created_at"`
+	SubmittedBy   uuid.UUID                 `json:"submitted_by"`
 	Status        serializable.SalaryStatus `json:"status"`
 	Version       int                       `json:"version"`
 }

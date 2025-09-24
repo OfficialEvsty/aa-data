@@ -2,8 +2,10 @@ package junction_repos
 
 import (
 	"context"
+	"database/sql"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
+	junction_repos "github.com/OfficialEvsty/aa-data/repos/interface/junction"
 	"github.com/google/uuid"
 )
 
@@ -46,4 +48,8 @@ func (r *LunarSalaryRepository) GetSalaries(ctx context.Context, lunarkID uuid.U
 		return nil, err
 	}
 	return result, nil
+}
+
+func (r *LunarSalaryRepository) WithTx(tx *sql.Tx) junction_repos.ILunarkSalaryRepository {
+	return &LunarSalaryRepository{tx}
 }

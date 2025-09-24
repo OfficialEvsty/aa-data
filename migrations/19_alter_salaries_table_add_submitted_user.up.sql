@@ -1,0 +1,1 @@
+ALTER TABLE salaries ADD COLUMN submitted UUID;
