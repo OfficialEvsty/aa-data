@@ -36,8 +36,8 @@ func (q *GetSalaryContextByLunarkIdQuery) Handle(
 		&result.Tax,
 		&result.CreatedAt,
 		&result.Status,
-		&result.Version,
 		&result.SubmittedBy,
+		&result.Version,
 	)
 	if err != nil {
 		return nil, err
