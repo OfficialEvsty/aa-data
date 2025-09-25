@@ -19,7 +19,7 @@ func (q *GetSalaryContextByLunarkIdQuery) Handle(
 	ctx context.Context,
 	lunarkID uuid.UUID,
 ) (*usecase.SalaryContext, error) {
-	query := `SELECT ls.lunark_id, ls.salary_id, s.fond, s.min_attendance, s.tax, s.created_at, s.status, s.submitted, s.version, s.is_deleted
+	query := `SELECT ls.lunark_id, ls.salary_id, s.fond, s.min_attendance, s.tax, s.created_at, s.status, s.submitted, s.version
  			  FROM lunark_salaries ls
  			  JOIN salaries s ON s.id = ls.salary_id
  			  WHERE ls.lunark_id = $1 AND s.is_deleted = FALSE`
