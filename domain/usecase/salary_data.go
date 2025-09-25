@@ -8,7 +8,7 @@ import (
 
 type SalaryContext struct {
 	LunarkID      uuid.UUID                 `json:"lunark_id"`
-	SalaryID      uuid.UUID                 `json:"salary_id"`
+	SalaryID      *uuid.UUID                `json:"salary_id"`
 	Fond          int64                     `json:"fond"`
 	MinAttendance int                       `json:"min_attendance"`
 	Tax           int                       `json:"tax"`
