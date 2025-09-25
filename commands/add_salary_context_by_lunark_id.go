@@ -19,7 +19,7 @@ type AddSalaryContextByLunarkIDCommand struct {
 	Fond          int64
 	MinAttendance int
 	Tax           int
-	Status        string
+	Status        serializable.SalaryStatus
 }
 
 type SalaryContextImporter struct {
