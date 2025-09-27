@@ -17,3 +17,9 @@ type SalaryContext struct {
 	Status        serializable.SalaryStatus `json:"status"`
 	Version       int                       `json:"version"`
 }
+
+type ExcludedParticipant struct {
+	SalaryID uuid.UUID `json:"salary_id"`
+	ChainID  uuid.UUID `json:"chain_id"`
+	Reason   string    `json:"reason"`
+}
