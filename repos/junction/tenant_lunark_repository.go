@@ -27,7 +27,7 @@ func (r *TenantLunarkRepository) Add(ctx context.Context, entry domain.Journal) 
 }
 
 func (r *TenantLunarkRepository) CloseLunark(ctx context.Context, id uuid.UUID) error {
-	query := `UPDATE tenant_lunark SET opened = FALSE WHERE id = $1`
+	query := `UPDATE tenant_lunark SET opened = FALSE WHERE lunark_id = $1`
 	_, err := r.exec.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
