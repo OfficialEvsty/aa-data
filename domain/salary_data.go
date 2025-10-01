@@ -6,12 +6,6 @@ import (
 	"time"
 )
 
-type ExcludedParticipant struct {
-	SalaryID uuid.UUID `json:"salary_id"`
-	ChainID  uuid.UUID `json:"chain_id"`
-	Reason   string    `json:"reason"`
-}
-
 type Salary struct {
 	ID            uuid.UUID                 `json:"id"`
 	Fond          int64                     `json:"fond"`
