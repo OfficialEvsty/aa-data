@@ -9,7 +9,7 @@ import (
 
 type ISalaryRepository interface {
 	Add(context.Context, domain.Salary) error
-	Remove(context.Context, uuid.UUID) error
+	SafeDelete(context.Context, uuid.UUID) error
 	Update(context.Context, domain.Salary) error
 	GetByID(context.Context, uuid.UUID) (*domain.Salary, error)
 	WithTx(*sql.Tx) ISalaryRepository

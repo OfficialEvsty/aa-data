@@ -22,8 +22,8 @@ func (r *SalaryRepository) Add(ctx context.Context, salary domain.Salary) error 
 	_, err := r.exec.ExecContext(ctx, query, salary.ID, salary.Fond, salary.MinAttendance, salary.Tax, salary.SubmittedBy)
 	return err
 }
-func (r *SalaryRepository) Remove(ctx context.Context, salaryID uuid.UUID) error {
-	query := `DELETE FROM salaries WHERE id = $1`
+func (r *SalaryRepository) SafeDelete(ctx context.Context, salaryID uuid.UUID) error {
+	query := `UPDATE salaries SET is_deleted = TRUE WHERE id = $1`
 	_, err := r.exec.ExecContext(ctx, query, salaryID)
 	return err
 }
