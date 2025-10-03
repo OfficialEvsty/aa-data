@@ -24,7 +24,8 @@ func (q *GetAllItemsFromRaidsByTenantIdQuery) Handle(
               JOIN lunark_raids lr ON lr.lunark_id = tl.lunark_id
               JOIN raid_items ri ON ri.raid_id = lr.raid_id
 			  JOIN aa_items i ON i.id = ri.item_id
-			  WHERE tl.tenant_id = $1`
+              JOIN raids r ON r.id = lr.raid_id
+			  WHERE tl.tenant_id = $1 AND r.is_deleted = FALSE`
 	rows, err := q.exec.QueryContext(ctx, query, tenantID)
 	if err != nil {
 		return nil, err
