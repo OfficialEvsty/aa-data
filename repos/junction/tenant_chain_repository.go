@@ -55,7 +55,7 @@ func (r *TenantChainRepository) Remove(ctx context.Context, chainID uuid.UUID) e
 }
 
 func (r *TenantChainRepository) CheckTenantAttachment(ctx context.Context, tenantID uuid.UUID, chainIDs []uuid.UUID) error {
-	query := `SELECT FROM tenant_chains WHERE tenant_id = $1 AND chain_id = ANY($2)`
+	query := `SELECT tenant_id, chain_id FROM tenant_chains WHERE tenant_id = $1 AND chain_id = ANY($2)`
 	rows, err := r.exec.QueryContext(ctx, query, tenantID, pq.Array(chainIDs))
 	if err != nil {
 		return err

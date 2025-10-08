@@ -32,11 +32,15 @@ func NewAttachManager(sql *sql.DB) *AttachManager {
 
 func (ci *AttachManager) AttachChain(ctx context.Context, cmd *AttachNewChainByOldChainIDCommand) error {
 	return ci.txManager.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
-		err := ci.chainRepo.WithTx(tx).AttachChain(ctx, cmd.ParentChainID, cmd.ChildChainID)
+		previous, err := ci.chainRepo.WithTx(tx).GetActiveChainID(ctx, cmd.ParentChainID)
 		if err != nil {
 			return err
 		}
-		err = ci.chainRepo.WithTx(tx).UpdateStatus(ctx, cmd.ParentChainID, false)
+		err = ci.chainRepo.WithTx(tx).AttachChain(ctx, previous.ChainID, cmd.ChildChainID)
+		if err != nil {
+			return err
+		}
+		err = ci.chainRepo.WithTx(tx).UpdateStatus(ctx, previous.ChainID, false)
 		if err != nil {
 			return err
 		}
@@ -46,11 +50,21 @@ func (ci *AttachManager) AttachChain(ctx context.Context, cmd *AttachNewChainByO
 
 func (ci *AttachManager) DetachChain(ctx context.Context, cmd *DetachChainFromParentCommand) error {
 	return ci.txManager.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
-		err := ci.chainRepo.WithTx(tx).DetachChain(ctx, cmd.ParentChainID)
+		active, err := ci.chainRepo.WithTx(tx).GetActiveChainID(ctx, cmd.ParentChainID)
 		if err != nil {
 			return err
 		}
-		err = ci.chainRepo.WithTx(tx).UpdateStatus(ctx, cmd.ParentChainID, true)
+		var inactiveParentID uuid.UUID
+		if active.ParentChainID == nil {
+			return nil
+		} else {
+			inactiveParentID = *active.ParentChainID
+		}
+		err = ci.chainRepo.WithTx(tx).DetachChain(ctx, inactiveParentID)
+		if err != nil {
+			return err
+		}
+		err = ci.chainRepo.WithTx(tx).UpdateStatus(ctx, inactiveParentID, true)
 		if err != nil {
 			return err
 		}
