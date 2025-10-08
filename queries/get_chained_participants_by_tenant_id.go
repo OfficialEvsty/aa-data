@@ -17,7 +17,7 @@ func NewGetChainedParticipantsByTenantIDQuery(exec db.ISqlExecutor) *GetChainedP
 	return &GetChainedParticipantsByTenantIDQuery{exec: exec}
 }
 
-func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, activeChainIDs []uuid.UUID) (usecase.AllChainedParticipants, error) {
+func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, rootChainIDs []uuid.UUID) (usecase.AllChainedParticipants, error) {
 	participantNicknameHistories := make(map[uuid.UUID][]usecase.ChainedNodeNickname)
 	query := `
 				WITH RECURSIVE chain_tree AS (
@@ -56,7 +56,7 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, acti
 				FROM chain_tree
 				ORDER BY root_chain_id, depth;
 			 `
-	rows, err := q.exec.QueryContext(ctx, query, pq.Array(activeChainIDs))
+	rows, err := q.exec.QueryContext(ctx, query, pq.Array(rootChainIDs))
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, acti
 								WHERE ct.active = TRUE
 								ORDER BY ct.root_chain_id DESC;
 							`
-	rows, err = q.exec.QueryContext(ctx, getParticipantQuery, pq.Array(activeChainIDs))
+	rows, err = q.exec.QueryContext(ctx, getParticipantQuery, pq.Array(rootChainIDs))
 	if err != nil {
 		return nil, err
 	}
