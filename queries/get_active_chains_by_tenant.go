@@ -28,7 +28,7 @@ func (q *GetActiveChainsByTenantQuery) Handle(ctx context.Context, tenantID uuid
 	query := `SELECT c.chain_id, c.nickname_id, c.active, c.chained_at
               FROM chains c
               JOIN tenant_chains tc ON c.chain_id = tc.chain_id
-              WHERE tc.tenant_id = $1`
+              WHERE tc.tenant_id = $1 AND c.active = TRUE`
 	rows, err := q.exec.QueryContext(ctx, query, tenantID)
 	if err != nil {
 		return result, err
