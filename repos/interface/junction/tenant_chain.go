@@ -11,5 +11,6 @@ type ITenantChainRepository interface {
 	Add(context.Context, domain.TenantChain) error
 	Remove(context.Context, uuid.UUID) error
 	GetAllByTenant(context.Context, uuid.UUID) ([]*domain.TenantChain, error)
+	CheckTenantAttachment(context.Context, uuid.UUID, []uuid.UUID) error
 	WithTx(tx *sql.Tx) ITenantChainRepository
 }
