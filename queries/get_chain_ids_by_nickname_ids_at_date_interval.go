@@ -17,6 +17,7 @@ func NewGetChainIdsByNicknameIdsAtDateIntervalQuery(sql db.ISqlExecutor) *GetCha
 	return &GetChainIdsByNicknameIdsAtDateIntervalQuery{sql}
 }
 
+// get root chains
 func (q *GetChainIdsByNicknameIdsAtDateIntervalQuery) Handle(
 	ctx context.Context,
 	nicknameIDs []uuid.UUID,

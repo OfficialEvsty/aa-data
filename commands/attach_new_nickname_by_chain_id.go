@@ -32,15 +32,30 @@ func NewAttachManager(sql *sql.DB) *AttachManager {
 
 func (ci *AttachManager) AttachChain(ctx context.Context, cmd *AttachNewChainByOldChainIDCommand) error {
 	return ci.txManager.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
-		previous, err := ci.chainRepo.WithTx(tx).GetActiveChainID(ctx, cmd.ParentChainID)
+		// notify: ParentChainID and ChildChainID sent from Web as RootIDs
+		parentActiveChain, err := ci.chainRepo.WithTx(tx).GetActiveChainID(ctx, cmd.ParentChainID)
 		if err != nil {
 			return err
 		}
-		err = ci.chainRepo.WithTx(tx).AttachChain(ctx, previous.ChainID, cmd.ChildChainID)
+		childActiveChain, err := ci.chainRepo.WithTx(tx).GetActiveChainID(ctx, cmd.ChildChainID)
 		if err != nil {
 			return err
 		}
-		err = ci.chainRepo.WithTx(tx).UpdateStatus(ctx, previous.ChainID, false)
+		if childActiveChain.ParentChainID != nil {
+			err = ci.chainRepo.WithTx(tx).DetachChain(ctx, *childActiveChain.ParentChainID)
+			if err != nil {
+				return err
+			}
+			err = ci.chainRepo.WithTx(tx).UpdateStatus(ctx, *childActiveChain.ParentChainID, true)
+			if err != nil {
+				return err
+			}
+		}
+		err = ci.chainRepo.WithTx(tx).AttachChain(ctx, parentActiveChain.ChainID, childActiveChain.ChainID)
+		if err != nil {
+			return err
+		}
+		err = ci.chainRepo.WithTx(tx).UpdateStatus(ctx, parentActiveChain.ChainID, false)
 		if err != nil {
 			return err
 		}

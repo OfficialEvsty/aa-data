@@ -131,6 +131,7 @@ func (r *ChainRepository) AttachChain(ctx context.Context, parent uuid.UUID, chi
 	return err
 }
 
+// DetachChain detaches child from specified parent
 func (r *ChainRepository) DetachChain(ctx context.Context, parent uuid.UUID) error {
 	query := `UPDATE chains SET parent_chain_id = NULL WHERE parent_chain_id = $1;`
 	_, err := r.exec.ExecContext(ctx, query, parent)
