@@ -32,11 +32,12 @@ func (q *GetChainIdsByNicknameIdsAtDateIntervalQuery) Handle(
 						c.nickname_id,
 						c.parent_chain_id,
 						c.chained_at,
+						c.created_at,
 						c.active,
 						c.nickname_id AS searched_nickname_id
 					FROM chains c
 					WHERE c.nickname_id = ANY($1::uuid[])
-					  AND c.chained_at <= $3
+					  AND c.created_at <= $3
 				
 					UNION ALL
 				
@@ -46,6 +47,7 @@ func (q *GetChainIdsByNicknameIdsAtDateIntervalQuery) Handle(
 						c.nickname_id,
 						c.parent_chain_id,
 						c.chained_at,
+						c.created_at,
 						c.active,
 						rc.searched_nickname_id
 					FROM chains c
@@ -56,8 +58,8 @@ func (q *GetChainIdsByNicknameIdsAtDateIntervalQuery) Handle(
 						c.chain_id,
 						c.nickname_id,
 						c.parent_chain_id,
-						c.chained_at AS start_date,
-						COALESCE(child.chained_at, '9999-12-31'::timestamp) AS end_date,
+						c.created_at AS start_date,
+						COALESCE(c.chained_at, '9999-12-31'::timestamp) AS end_date,
 						c.active,
 						c.nickname_id AS searched_nickname_id
 					FROM chains c
@@ -71,7 +73,7 @@ func (q *GetChainIdsByNicknameIdsAtDateIntervalQuery) Handle(
 				FROM root_chain rc
 				JOIN intervals i ON i.chain_id = rc.chain_id
 				WHERE rc.parent_chain_id IS NULL
-				  -- AND i.start_date < i.end_date  -- базовое условие валидного интервала (deprecated)
+				  AND i.start_date < i.end_date  -- базовое условие валидного интервала (deprecated)
 				  AND i.start_date < $3          -- пересечение с заданным интервалом [$3, $4]
 				  AND i.end_date   > $2;	
 

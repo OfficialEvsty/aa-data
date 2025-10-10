@@ -36,17 +36,17 @@ func (q *GetNicknamesHistoryByRelativeChainIdQuery) Handle(ctx context.Context, 
 	var history NicknameHistory
 	query := `
 				WITH RECURSIVE chain_tree AS (
-					SELECT chain_id, nickname_id, parent_chain_id, chained_at, active, 1 AS depth
+					SELECT chain_id, nickname_id, parent_chain_id, created_at, chained_at, active, 1 AS depth
 					FROM chains
 					WHERE chain_id = $1
 				
 					UNION ALL
 					
-					SELECT c.chain_id, c.nickname_id, c.parent_chain_id, c.chained_at, c.active, ct.depth + 1
+					SELECT c.chain_id, c.nickname_id, c.parent_chain_id, c.created_at, c.chained_at, c.active, ct.depth + 1
 					FROM chains c 
 					INNER JOIN chain_tree ct ON c.parent_chain_id = ct.chain_id
 				)
-				SELECT chain_id, nickname_id, parent_chain_id, chained_at, active
+				SELECT chain_id, nickname_id, parent_chain_id, created_at, chained_at, active
 				FROM chain_tree
 				ORDER BY depth;
 			 `
@@ -61,6 +61,7 @@ func (q *GetNicknamesHistoryByRelativeChainIdQuery) Handle(ctx context.Context, 
 			&chain.ChainID,
 			&chain.NicknameID,
 			&chain.ParentChainID,
+			&chain.CreatedAt,
 			&chain.ChainedAt,
 			&chain.Active,
 		)

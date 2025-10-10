@@ -25,6 +25,7 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 						c.chain_id,
 						c.nickname_id,
 						c.parent_chain_id,
+						c.created_at,
 						c.chained_at,
 						c.active,
 						c.chain_id AS root_chain_id,  -- сохраняем корень
@@ -38,6 +39,7 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 						c.chain_id,
 						c.nickname_id,
 						c.parent_chain_id,
+						c.created_at,
 						c.chained_at,
 						c.active,
 						ct.root_chain_id,              -- протягиваем root вниз
@@ -49,7 +51,7 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 					chain_id,
 					nickname_id,
 					parent_chain_id,
-					chained_at,
+					created_at,
 					active,
 					root_chain_id,
 					depth

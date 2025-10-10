@@ -7,6 +7,7 @@ import (
 	repos2 "github.com/OfficialEvsty/aa-data/repos"
 	repos "github.com/OfficialEvsty/aa-data/repos/interface"
 	"github.com/google/uuid"
+	"time"
 )
 
 type AttachNewChainByOldChainIDCommand struct {
@@ -50,6 +51,10 @@ func (ci *AttachManager) AttachChain(ctx context.Context, cmd *AttachNewChainByO
 			if err != nil {
 				return err
 			}
+			err = ci.chainRepo.WithTx(tx).UpdateChainedAt(ctx, *childActiveChain.ParentChainID, nil)
+			if err != nil {
+				return err
+			}
 		}
 		err = ci.chainRepo.WithTx(tx).AttachChain(ctx, parentActiveChain.ChainID, childActiveChain.ChainID)
 		if err != nil {
@@ -59,6 +64,8 @@ func (ci *AttachManager) AttachChain(ctx context.Context, cmd *AttachNewChainByO
 		if err != nil {
 			return err
 		}
+		chainedAt := time.Now()
+		err = ci.chainRepo.WithTx(tx).UpdateChainedAt(ctx, parentActiveChain.ChainID, &chainedAt)
 		return nil
 	})
 }

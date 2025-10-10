@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/OfficialEvsty/aa-data/domain"
 	"github.com/google/uuid"
+	"time"
 )
 
 type IChainRepository interface {
@@ -16,5 +17,6 @@ type IChainRepository interface {
 	AttachChain(ctx context.Context, parent uuid.UUID, child uuid.UUID) error
 	DetachChain(context.Context, uuid.UUID) error
 	UpdateStatus(context.Context, uuid.UUID, bool) error
+	UpdateChainedAt(ctx context.Context, parent uuid.UUID, chainedAt *time.Time) error
 	WithTx(*sql.Tx) IChainRepository
 }
