@@ -26,7 +26,6 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 						c.nickname_id,
 						c.parent_chain_id,
 						c.created_at,
-						c.chained_at,
 						c.active,
 						c.chain_id AS root_chain_id,  -- сохраняем корень
 						1 AS depth
@@ -40,7 +39,6 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 						c.nickname_id,
 						c.parent_chain_id,
 						c.created_at,
-						c.chained_at,
 						c.active,
 						ct.root_chain_id,              -- протягиваем root вниз
 						ct.depth + 1
@@ -92,6 +90,7 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 										c.chain_id,
 										c.nickname_id,
 										c.parent_chain_id,
+										c.created_at,
 										c.chained_at,
 										c.active,
 										c.chain_id AS root_chain_id
@@ -105,6 +104,7 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 										c.chain_id,
 										c.nickname_id,
 										c.parent_chain_id,
+										c.created_at,
 										c.chained_at,
 										c.active,
 										ct.root_chain_id
@@ -131,7 +131,7 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var p usecase.ChainedParticipant
+		p := &usecase.ChainedParticipant{}
 		var active bool
 		err = rows.Scan(
 			&p.CurrentNicknameID,
@@ -141,7 +141,7 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 			&p.GuildID,
 			&p.RootChainID,
 		)
-		allChainedParticipants[p.RootChainID] = &p
+		allChainedParticipants[p.RootChainID] = p
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err

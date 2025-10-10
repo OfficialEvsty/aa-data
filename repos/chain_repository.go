@@ -88,11 +88,11 @@ func (r *ChainRepository) GetActiveChainID(ctx context.Context, chainID uuid.UUI
 			FROM chains c
 			INNER JOIN chain_tree ct ON c.parent_chain_id = ct.chain_id
 		)
-		SELECT DISTINCT chain_id, nickname_id, parent_chain_id, created_at, active, chained_at
+		SELECT DISTINCT chain_id, nickname_id, parent_chain_id, active, created_at, chained_at
 		FROM chain_tree
 		WHERE active = TRUE
 		LIMIT 1;`
-	err := r.exec.QueryRowContext(ctx, query, chainID).Scan(&result.ChainID, &result.NicknameID, &result.ParentChainID, &result.CreatedAt, &result.Active, &result.ChainedAt)
+	err := r.exec.QueryRowContext(ctx, query, chainID).Scan(&result.ChainID, &result.NicknameID, &result.ParentChainID, &result.Active, &result.CreatedAt, &result.ChainedAt)
 	return &result, err
 }
 
@@ -109,7 +109,7 @@ func (r *ChainRepository) GetNicknameChains(ctx context.Context, chainID uuid.UU
             FROM chains c
             INNER JOIN chain_tree ct ON c.parent_chain_id = ct.chain_id
         )
-        SELECT DISTINCT chain_id, nickname_id, parent_chain_id, chained_at, active FROM chain_tree;`
+        SELECT DISTINCT chain_id, nickname_id, parent_chain_id, created_at, chained_at, active FROM chain_tree;`
 	rows, err := r.exec.QueryContext(ctx, query, chainID)
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func (r *ChainRepository) GetNicknameChains(ctx context.Context, chainID uuid.UU
 	defer rows.Close()
 	for rows.Next() {
 		var chain domain.NicknameChain
-		err = rows.Scan(&chain.ChainID, &chain.NicknameID, &chain.ParentChainID, &chain.ChainedAt, &chain.Active)
+		err = rows.Scan(&chain.ChainID, &chain.NicknameID, &chain.ParentChainID, &chain.CreatedAt, &chain.ChainedAt, &chain.Active)
 		if err != nil {
 			return nil, err
 		}
@@ -129,7 +129,7 @@ func (r *ChainRepository) AttachChain(ctx context.Context, parent uuid.UUID, chi
 	query := `UPDATE chains
    			  SET parent_chain_id = $1
     		  WHERE chain_id = $2;`
-	_, err := r.exec.ExecContext(ctx, query, parent, child, time.Now())
+	_, err := r.exec.ExecContext(ctx, query, parent, child)
 	return err
 }
 
