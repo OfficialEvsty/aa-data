@@ -9,10 +9,11 @@ import (
 )
 
 type TenantChainDTO struct {
-	ChainID    uuid.UUID `json:"chain_id"`
-	ChainedAt  time.Time `json:"chained_at"`
-	NicknameID uuid.UUID `json:"nickname_id"`
-	Active     bool      `json:"active"`
+	ChainID    uuid.UUID  `json:"chain_id"`
+	CreatedAt  time.Time  `json:"created_at"`
+	ChainedAt  *time.Time `json:"chained_at"`
+	NicknameID uuid.UUID  `json:"nickname_id"`
+	Active     bool       `json:"active"`
 }
 
 type GetActiveChainsByTenantQuery struct {
@@ -25,7 +26,7 @@ func NewGetActiveChainsByTenantQuery(exec db.ISqlExecutor) *GetActiveChainsByTen
 
 func (q *GetActiveChainsByTenantQuery) Handle(ctx context.Context, tenantID uuid.UUID) ([]*TenantChainDTO, error) {
 	var result []*TenantChainDTO = make([]*TenantChainDTO, 0)
-	query := `SELECT c.chain_id, c.nickname_id, c.active, c.chained_at
+	query := `SELECT c.chain_id, c.nickname_id, c.active, c.created_at, c.chained_at
               FROM chains c
               JOIN tenant_chains tc ON c.chain_id = tc.chain_id
               WHERE tc.tenant_id = $1 AND c.active = TRUE`
@@ -36,7 +37,7 @@ func (q *GetActiveChainsByTenantQuery) Handle(ctx context.Context, tenantID uuid
 	defer rows.Close()
 	for rows.Next() {
 		var t TenantChainDTO
-		err = rows.Scan(&t.ChainID, &t.NicknameID, &t.Active, &t.ChainedAt)
+		err = rows.Scan(&t.ChainID, &t.NicknameID, &t.Active, &t.CreatedAt, &t.ChainedAt)
 		if err != nil {
 			return result, err
 		}
@@ -51,7 +52,7 @@ func (q *GetActiveChainsByTenantQuery) Handle(ctx context.Context, tenantID uuid
 
 func (q *GetActiveChainsByTenantQuery) GetRootChainIDs(ctx context.Context, tenantID uuid.UUID) ([]*TenantChainDTO, error) {
 	var result []*TenantChainDTO = make([]*TenantChainDTO, 0)
-	query := `SELECT c.chain_id, c.nickname_id, c.active, c.chained_at
+	query := `SELECT c.chain_id, c.nickname_id, c.active, c.created_at, c.chained_at
               FROM chains c
               JOIN tenant_chains tc ON c.chain_id = tc.chain_id
               WHERE tc.tenant_id = $1 AND c.parent_chain_id IS NULL`
@@ -62,7 +63,7 @@ func (q *GetActiveChainsByTenantQuery) GetRootChainIDs(ctx context.Context, tena
 	defer rows.Close()
 	for rows.Next() {
 		var t TenantChainDTO
-		err = rows.Scan(&t.ChainID, &t.NicknameID, &t.Active, &t.ChainedAt)
+		err = rows.Scan(&t.ChainID, &t.NicknameID, &t.Active, &t.CreatedAt, &t.ChainedAt)
 		if err != nil {
 			return result, err
 		}
