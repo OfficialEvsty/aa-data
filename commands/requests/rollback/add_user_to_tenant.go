@@ -3,7 +3,7 @@ package rollback
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
+	"errors"
 	db2 "github.com/OfficialEvsty/aa-data/db"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain/serializable"
@@ -27,7 +27,6 @@ type AddUserToTenantRequest struct {
 }
 
 func NewAddUserToTenantRequest(sql *sql.DB) *AddUserToTenantRequest {
-
 	return &AddUserToTenantRequest{
 		tx:             db2.NewTxManager(sql),
 		tenantUserRepo: junction_repos2.NewTenantUserRepository(sql),
@@ -35,10 +34,11 @@ func NewAddUserToTenantRequest(sql *sql.DB) *AddUserToTenantRequest {
 	}
 }
 
-func (r *AddUserToTenantRequest) Execute(ctx context.Context, payload []byte) error {
-	err := json.Unmarshal(payload, &r.cmd)
-	if err != nil {
-		return err
+func (r *AddUserToTenantRequest) Execute(ctx context.Context, payload interface{}) error {
+	var ok bool
+	r.cmd, ok = payload.(AddUserToTenantPayload)
+	if !ok {
+		return errors.New("payload is not a AddUserToTenantRequest")
 	}
 	return r.tx.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
 		exists, err := r.tenantUserRepo.WithTx(tx).CheckUser(ctx, r.cmd.TenantID, r.cmd.UserID)
@@ -56,10 +56,11 @@ func (r *AddUserToTenantRequest) Execute(ctx context.Context, payload []byte) er
 	})
 }
 
-func (r *AddUserToTenantRequest) Rollback(ctx context.Context, payload []byte) error {
-	err := json.Unmarshal(payload, &r.cmd)
-	if err != nil {
-		return err
+func (r *AddUserToTenantRequest) Rollback(ctx context.Context, payload interface{}) error {
+	var ok bool
+	r.cmd, ok = payload.(AddUserToTenantPayload)
+	if !ok {
+		return errors.New("payload is not a AddUserToTenantRequest")
 	}
 
 	return r.tx.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
