@@ -51,7 +51,6 @@ func (r *AddUserToTenantRequest) Execute(ctx context.Context, payload []byte) er
 				return err
 			}
 		}
-		// todo request sql table handling
 		err = r.requestRepo.WithTx(tx).Accept(ctx, r.cmd.TenantID, r.cmd.UserID)
 		return err
 	})
