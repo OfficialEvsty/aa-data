@@ -26,21 +26,20 @@ type AddUserToTenantRequest struct {
 	requestRepo    repos.IRequestRepository
 }
 
-func NewAddUserToTenantRequest(sql *sql.DB, payload []byte) (*AddUserToTenantRequest, error) {
-	var data AddUserToTenantPayload
-	err := json.Unmarshal(payload, &data)
-	if err != nil {
-		return nil, err
-	}
+func NewAddUserToTenantRequest(sql *sql.DB) *AddUserToTenantRequest {
+
 	return &AddUserToTenantRequest{
-		cmd:            data,
 		tx:             db2.NewTxManager(sql),
 		tenantUserRepo: junction_repos2.NewTenantUserRepository(sql),
 		requestRepo:    repos2.NewRequestRepository(sql),
-	}, nil
+	}
 }
 
-func (r *AddUserToTenantRequest) Execute(ctx context.Context) error {
+func (r *AddUserToTenantRequest) Execute(ctx context.Context, payload []byte) error {
+	err := json.Unmarshal(payload, &r.cmd)
+	if err != nil {
+		return err
+	}
 	return r.tx.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
 		exists, err := r.tenantUserRepo.WithTx(tx).CheckUser(ctx, r.cmd.TenantID, r.cmd.UserID)
 		if err != nil {
@@ -58,7 +57,11 @@ func (r *AddUserToTenantRequest) Execute(ctx context.Context) error {
 	})
 }
 
-func (r *AddUserToTenantRequest) Rollback(ctx context.Context) error {
+func (r *AddUserToTenantRequest) Rollback(ctx context.Context, payload []byte) error {
+	err := json.Unmarshal(payload, &r.cmd)
+	if err != nil {
+		return err
+	}
 	return r.tx.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
 		exists, err := r.tenantUserRepo.WithTx(tx).CheckUser(ctx, r.cmd.TenantID, r.cmd.UserID)
 		if err != nil {
