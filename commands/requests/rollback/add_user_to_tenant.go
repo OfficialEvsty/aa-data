@@ -62,6 +62,7 @@ func (r *AddUserToTenantRequest) Rollback(ctx context.Context, payload []byte) e
 	if err != nil {
 		return err
 	}
+
 	return r.tx.WithTx(ctx, func(ctx context.Context, tx *sql.Tx) error {
 		exists, err := r.tenantUserRepo.WithTx(tx).CheckUser(ctx, r.cmd.TenantID, r.cmd.UserID)
 		if err != nil {
