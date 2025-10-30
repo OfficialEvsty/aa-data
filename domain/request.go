@@ -14,7 +14,7 @@ type Request struct {
 	Status     serializable.RequestProcessStatus `json:"status"`
 	Done       bool                              `json:"done"`
 	EditUserID uuid.UUID                         `json:"edit_user_id"`
-	SourceID   uuid.NullUUID                     `json:"source_id,omitempty"`
+	SourceID   *uuid.UUID                        `json:"source_id,omitempty"`
 	SourceName string                            `json:"source_name"`
 	CreatedAt  time.Time                         `json:"created_at"`
 	SolvedAt   *time.Time                        `json:"solved_at,omitempty"`
