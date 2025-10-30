@@ -18,7 +18,7 @@ func NewGetTenantRequestQuery(exec db.ISqlExecutor) *GetTenantRequestQuery {
 }
 
 func (q *GetTenantRequestQuery) Handle(ctx context.Context, tenantID uuid.UUID) ([]*domain.Request, error) {
-	query := `SELECT id, type, payload, done, created_at, solved_at, rollback_at, is_deleted
+	query := `SELECT id, type, payload, done, source_id, source_name, created_at, solved_at, rollback_at, is_deleted
 			  FROM requests
 			  JOIN tenant_requests tr ON tr.request_id = requests.id
 			  WHERE tr.tenant_id = $1`
@@ -35,6 +35,8 @@ func (q *GetTenantRequestQuery) Handle(ctx context.Context, tenantID uuid.UUID) 
 			&request.Type,
 			&request.Payload,
 			&request.Done,
+			&request.SourceID,
+			&request.SourceName,
 			&request.CreatedAt,
 			&request.SolvedAt,
 			&request.RollbackAt,

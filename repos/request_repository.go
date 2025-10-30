@@ -3,6 +3,7 @@ package repos
 import (
 	"context"
 	"database/sql"
+	"errors"
 	db "github.com/OfficialEvsty/aa-data/db/interface"
 	"github.com/OfficialEvsty/aa-data/domain"
 	"github.com/OfficialEvsty/aa-data/domain/serializable"
@@ -20,8 +21,8 @@ func NewRequestRepository(db db.ISqlExecutor) *RequestRepository {
 }
 
 func (r *RequestRepository) Add(ctx context.Context, request domain.Request) error {
-	query := `INSERT INTO requests (id, type, payload, status) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO NOTHING`
-	_, err := r.db.ExecContext(ctx, query, request.ID, request.Type, request.Payload, request.Status)
+	query := `INSERT INTO requests (id, type, payload, status, source_id, source_name) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (id) DO NOTHING`
+	_, err := r.db.ExecContext(ctx, query, request.ID, request.Type, request.Payload, request.Status, request.SourceID, request.SourceName)
 	return err
 }
 
@@ -58,6 +59,8 @@ func (r *RequestRepository) Get(ctx context.Context, rID uuid.UUID) (*domain.Req
     			type, 
     			payload, 
     			status, 
+    			source_id,
+    			source_name,
     			solved_at, 
     			edit_user_id, 
     			solved_at, 
@@ -70,6 +73,8 @@ func (r *RequestRepository) Get(ctx context.Context, rID uuid.UUID) (*domain.Req
 		&result.Type,
 		&result.Payload,
 		&result.Status,
+		&result.SourceID,
+		&result.SourceName,
 		&result.SolvedAt,
 		&result.EditUserID,
 		&result.SolvedAt,
@@ -77,6 +82,19 @@ func (r *RequestRepository) Get(ctx context.Context, rID uuid.UUID) (*domain.Req
 		&result.RollbackAt,
 	)
 	return &result, err
+}
+
+func (r *RequestRepository) ExistsBySourceIDAndType(ctx context.Context, srcID uuid.UUID, rType serializable.RequestType) (bool, error) {
+	query := `SELECT id FROM requests WHERE source_id = $1 AND type = $2`
+	var id uuid.UUID
+	err := r.db.QueryRowContext(ctx, query, srcID, rType).Scan(&id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 func (r *RequestRepository) WithTx(tx *sql.Tx) repos2.IRequestRepository {
