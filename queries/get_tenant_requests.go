@@ -19,9 +19,9 @@ func NewGetTenantRequestQuery(exec db.ISqlExecutor) *GetTenantRequestQuery {
 
 func (q *GetTenantRequestQuery) Handle(ctx context.Context, tenantID uuid.UUID) ([]*domain.Request, error) {
 	query := `SELECT id, type, payload, done, source_id, source_name, created_at, solved_at, rollback_at, is_deleted
-			  FROM requests
+			  FROM requests r
 			  JOIN tenant_requests tr ON tr.request_id = requests.id
-			  WHERE tr.tenant_id = $1`
+			  WHERE tr.tenant_id = $1  AND r.is_deleted = FALSE`
 	rows, err := q.exec.QueryContext(ctx, query, tenantID)
 	if err != nil {
 		return nil, err

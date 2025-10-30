@@ -48,7 +48,7 @@ func (r *RequestRepository) Decline(ctx context.Context, rID uuid.UUID, userID u
 			 		edit_user_id = $2,
 			 		solved_at = $3,
 			 		done = FALSE
-				WHERE id = $4`
+				WHERE id = $4 AND is_deleted = FALSE`
 	_, err := r.db.ExecContext(ctx, query, serializable.StatusDeclined, userID, time.Now(), rID)
 	return err
 }
@@ -67,7 +67,7 @@ func (r *RequestRepository) Get(ctx context.Context, rID uuid.UUID) (*domain.Req
     			done, 
     			rollback_at 
 			FROM requests 
-			WHERE id = $1`
+			WHERE id = $1 AND is_deleted = FALSE`
 	err := r.db.QueryRowContext(ctx, query, rID).Scan(
 		&result.ID,
 		&result.Type,
@@ -85,7 +85,7 @@ func (r *RequestRepository) Get(ctx context.Context, rID uuid.UUID) (*domain.Req
 }
 
 func (r *RequestRepository) ExistsBySourceIDAndType(ctx context.Context, srcID *uuid.UUID, rType serializable.RequestType) (bool, error) {
-	query := `SELECT id FROM requests WHERE source_id = $1 AND type = $2`
+	query := `SELECT id FROM requests WHERE source_id = $1 AND type = $2 AND is_deleted = FALSE`
 	var id uuid.UUID
 	err := r.db.QueryRowContext(ctx, query, srcID, rType).Scan(&id)
 	if err != nil {
