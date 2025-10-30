@@ -14,6 +14,6 @@ type IRequestRepository interface {
 	Accept(context.Context, uuid.UUID, uuid.UUID) error
 	Decline(context.Context, uuid.UUID, uuid.UUID) error
 	Get(context.Context, uuid.UUID) (*domain.Request, error)
-	ExistsBySourceIDAndType(context.Context, uuid.UUID, serializable.RequestType) (bool, error)
+	ExistsBySourceIDAndType(context.Context, *uuid.UUID, serializable.RequestType) (bool, error)
 	WithTx(tx *sql.Tx) IRequestRepository
 }

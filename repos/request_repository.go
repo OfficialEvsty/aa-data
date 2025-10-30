@@ -84,7 +84,7 @@ func (r *RequestRepository) Get(ctx context.Context, rID uuid.UUID) (*domain.Req
 	return &result, err
 }
 
-func (r *RequestRepository) ExistsBySourceIDAndType(ctx context.Context, srcID uuid.UUID, rType serializable.RequestType) (bool, error) {
+func (r *RequestRepository) ExistsBySourceIDAndType(ctx context.Context, srcID *uuid.UUID, rType serializable.RequestType) (bool, error) {
 	query := `SELECT id FROM requests WHERE source_id = $1 AND type = $2`
 	var id uuid.UUID
 	err := r.db.QueryRowContext(ctx, query, srcID, rType).Scan(&id)
