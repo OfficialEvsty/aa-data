@@ -35,6 +35,7 @@ type RequestType string
 
 const (
 	AddUserToTenantRequest RequestType = "addUserToTenant"
+	AddNewNicknameRequest  RequestType = "addNewNickname"
 )
 
 func (s RequestType) String() string {
