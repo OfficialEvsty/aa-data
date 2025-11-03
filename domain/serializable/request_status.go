@@ -3,7 +3,6 @@ package serializable
 import (
 	"database/sql/driver"
 	"errors"
-	"strings"
 )
 
 type RequestProcessStatus string
@@ -25,7 +24,7 @@ func (s RequestProcessStatus) Value() (driver.Value, error) {
 
 func (s *RequestProcessStatus) Scan(src interface{}) error {
 	if val, ok := src.(string); ok {
-		*s = RequestProcessStatus(strings.ToLower(val))
+		*s = RequestProcessStatus(val)
 		return nil
 	}
 	return errors.New("type assertion to string failed")
@@ -48,7 +47,7 @@ func (s RequestType) Value() (driver.Value, error) {
 
 func (s *RequestType) Scan(src interface{}) error {
 	if val, ok := src.(string); ok {
-		*s = RequestType(strings.ToLower(val))
+		*s = RequestType(val)
 		return nil
 	}
 	return errors.New("type assertion to string failed")
