@@ -15,8 +15,10 @@ import (
 )
 
 type AddUserToTenantPayload struct {
-	TenantID uuid.UUID `json:"tenant_id"`
-	UserID   uuid.UUID `json:"user_id"`
+	TenantID   uuid.UUID `json:"tenant_id"`
+	UserID     uuid.UUID `json:"user_id"`
+	RequestID  uuid.UUID `json:"request_id"`
+	EditUserID uuid.UUID `json:"edit_user_id"`
 }
 
 type AddUserToTenantRequest struct {
@@ -51,8 +53,7 @@ func (r *AddUserToTenantRequest) Execute(ctx context.Context, payload interface{
 				return err
 			}
 		}
-		err = r.requestRepo.WithTx(tx).Accept(ctx, r.cmd.TenantID, r.cmd.UserID)
-		return err
+		return nil
 	})
 }
 
@@ -74,7 +75,7 @@ func (r *AddUserToTenantRequest) Rollback(ctx context.Context, payload interface
 				return err
 			}
 		}
-		return r.requestRepo.WithTx(tx).Remove(ctx, r.cmd.UserID)
+		return r.requestRepo.WithTx(tx).Remove(ctx, r.cmd.RequestID)
 	})
 }
 

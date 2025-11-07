@@ -37,7 +37,8 @@ func (r *RequestRepository) Accept(ctx context.Context, rID uuid.UUID, userID uu
                     done = TRUE, 
                     edit_user_id = $1,
                     status = $2,
-                    solved_at = $3
+                    solved_at = $3,
+                	is_deleted = TRUE
                 WHERE id = $4`
 	_, err := r.db.ExecContext(ctx, query, userID, serializable.StatusAccepted, time.Now(), rID)
 	return err
@@ -47,7 +48,8 @@ func (r *RequestRepository) Decline(ctx context.Context, rID uuid.UUID, userID u
 			 		status = $1,
 			 		edit_user_id = $2,
 			 		solved_at = $3,
-			 		done = FALSE
+			 		done = FALSE,
+                	is_deleted = TRUE
 				WHERE id = $4 AND is_deleted = FALSE`
 	_, err := r.db.ExecContext(ctx, query, serializable.StatusDeclined, userID, time.Now(), rID)
 	return err

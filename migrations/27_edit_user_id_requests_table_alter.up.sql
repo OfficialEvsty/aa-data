@@ -1,0 +1,1 @@
+ALTER TABLE requests ADD COLUMN edit_user_id UUID NULL;
