@@ -41,8 +41,8 @@ func (q *GetTenantUserByTenantID) Handle(ctx context.Context, tenantID uuid.UUID
 	}
 
 	defer rows.Close()
-	var dto TenantUser
 	for rows.Next() {
+		var dto TenantUser
 		err = rows.Scan(
 			&dto.UserID,
 			&dto.TenantID,
