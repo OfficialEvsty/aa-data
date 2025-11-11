@@ -48,3 +48,17 @@ func (q *GetTenantRequestQuery) Handle(ctx context.Context, tenantID uuid.UUID) 
 	}
 	return requests, nil
 }
+
+func (q *GetTenantRequestQuery) GetTenantRequestByID(ctx context.Context, id uuid.UUID) (*domain.TenantRequest, error) {
+	query := `SELECT tenant_id, request_id FROM tenant_requests WHERE request_id = $1`
+	row := q.exec.QueryRowContext(ctx, query, id)
+	var tenantRequest domain.TenantRequest
+	err := row.Scan(
+		&tenantRequest.TenantID,
+		&tenantRequest.RequestID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &tenantRequest, nil
+}
