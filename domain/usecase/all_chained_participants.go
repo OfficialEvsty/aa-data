@@ -15,6 +15,7 @@ type ChainedNodeNickname struct {
 
 type ChainedParticipant struct {
 	RootChainID       uuid.UUID             `json:"root_chain_id"`
+	ServerID          uuid.UUID             `json:"server_id"`
 	GuildID           uuid.UUID             `json:"guild_id"`
 	GuildName         string                `json:"guild_name"`
 	CurrentNicknameID uuid.UUID             `json:"nickname_id"`

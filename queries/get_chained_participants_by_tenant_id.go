@@ -117,7 +117,8 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 									n.name,
 									g.name,
 									g.id,
-									ct.root_chain_id
+									ct.root_chain_id,
+									n.server_id
 								FROM chain_tree ct
 								JOIN aa_nicknames n ON n.id = ct.nickname_id
 								JOIN aa_guild_nicknames gn ON gn.nickname_id = n.id
@@ -140,6 +141,7 @@ func (q *GetChainedParticipantsByTenantIDQuery) Handle(ctx context.Context, root
 			&p.GuildName,
 			&p.GuildID,
 			&p.RootChainID,
+			&p.ServerID,
 		)
 		allChainedParticipants[p.RootChainID] = p
 	}
