@@ -18,3 +18,9 @@ type NicknameChain struct {
 	ChainedAt     *time.Time `json:"chained_at"`
 	Active        bool       `json:"active"`
 }
+
+type ArchivedChain struct {
+	TenantID   uuid.UUID `json:"tenant_id"`
+	ChainID    uuid.UUID `json:"chain_id"`
+	ArchivedAt time.Time `json:"archived_at"`
+}
