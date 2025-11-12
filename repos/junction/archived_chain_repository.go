@@ -31,7 +31,7 @@ func (r *ArchivedChainRepository) AddMany(ctx context.Context, aChains []domain.
 	valueArgs := make([]interface{}, 0, len(aChains)*argCount)
 
 	for i, p := range aChains {
-		valueStrings = append(valueStrings, fmt.Sprintf("($%d,$%d)", i*4+1, i*4+2))
+		valueStrings = append(valueStrings, fmt.Sprintf("($%d,$%d)", i*2+1, i*2+2))
 		valueArgs = append(valueArgs, p.TenantID, p.ChainID)
 	}
 
