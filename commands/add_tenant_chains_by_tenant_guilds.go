@@ -50,7 +50,8 @@ func (i *AddTenantChainsByTenantGuilds) Handle(ctx context.Context, cmd *AddTena
 		for _, tn := range tenantNicknames {
 			exist := false
 			for _, tc := range tenantChains {
-				if tc.NicknameID == tn.NicknameID && tc.Active {
+				// todo в будущем необходимо применить стратегию aa observer
+				if tc.NicknameID == tn.NicknameID /*&& tc.Active*/ {
 					exist = true
 					break
 				}
